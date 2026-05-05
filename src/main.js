@@ -6,8 +6,54 @@ import { registerCollider, resolveCollisions } from './physics.js';
 // --- CONFIG ---
 const WORLD_SIZE = 2000;
 const WORLD_BORDER = WORLD_SIZE * 0.48; // ~960 — hard border edge
-const TILE_RES = 150; 
+const TILE_RES = 200; 
 const noise2D = createNoise2D();
+
+// --- GLOBAL PLACEMENT TOOLS ---
+let terrainPosAttr = null; // Will be set after terrain geometry is built
+
+/**
+ * High-performance height check that reads directly from the terrain mesh vertices.
+ * Uses bilinear interpolation to find the exact height at any coordinate (x, z).
+ */
+function getMeshHeight(x, z) {
+    if (!terrainPosAttr) return getTerrainHeight(x, z);
+    
+    const worldTotalSize = WORLD_SIZE * 4;
+    const segments = TILE_RES * 2;
+    const halfSize = WORLD_SIZE * 2;
+    
+    // Map world coords to grid coords [0, segments]
+    const gridX = (x + halfSize) / worldTotalSize * segments;
+    const gridZ = (z + halfSize) / worldTotalSize * segments;
+    
+    const ix = Math.floor(gridX);
+    const iz = Math.floor(gridZ);
+    
+    // Boundary check
+    if (ix < 0 || ix >= segments || iz < 0 || iz >= segments) {
+        return getTerrainHeight(x, z);
+    }
+    
+    // Get 4 surrounding vertex indices
+    const rowLen = segments + 1;
+    const idx00 = (iz * rowLen) + ix;
+    const idx10 = idx00 + 1;
+    const idx01 = idx00 + rowLen;
+    const idx11 = idx01 + 1;
+    
+    const y00 = terrainPosAttr.getY(idx00);
+    const y10 = terrainPosAttr.getY(idx10);
+    const y01 = terrainPosAttr.getY(idx01);
+    const y11 = terrainPosAttr.getY(idx11);
+    
+    // Bilinear interpolation
+    const fx = gridX - ix;
+    const fz = gridZ - iz;
+    const hTop = y00 * (1 - fx) + y10 * fx;
+    const hBot = y01 * (1 - fx) + y11 * fx;
+    return hTop * (1 - fz) + hBot * fz;
+}
 
 // --- ENGINE SETUP ---
 const textureLoader = new THREE.TextureLoader();
@@ -64,8 +110,12 @@ const BIOMES = {
 };
 
 function getBiomeData(x, z) {
-    const islandNoise = noise2D(x * 0.002, z * 0.002);
-    if (islandNoise <= -0.5) return { type: BIOMES.LUSH, h: -20 }; 
+    // Lake/Ocean Noise - Much smoother dipping
+    const lakeNoise = noise2D(x * 0.001, z * 0.001);
+    let lakeDepth = 0;
+    if (lakeNoise < -0.4) {
+        lakeDepth = Math.pow((lakeNoise + 0.4) * 3, 2) * -30;
+    }
     
     const bNoise = noise2D(x * 0.0015, z * 0.0015);
     let type = BIOMES.LUSH;
@@ -73,18 +123,28 @@ function getBiomeData(x, z) {
     else if (bNoise > 0.4) type = BIOMES.GOLDEN;
     else if (bNoise > 0.1 && bNoise <= 0.4) type = BIOMES.CRYSTAL;
 
-    let h = noise2D(x * 0.005, z * 0.005) * 3; // Base rolling hills
+    let h = (noise2D(x * 0.005, z * 0.005) * 3) + lakeDepth; 
     
-    // Mountains - Reduced frequency so there are fewer mountains
-    let m = noise2D(x * 0.002, z * 0.002);
+    // Mountains - Lower frequency (0.0008) for much BROADER bases
+    let m = noise2D(x * 0.0008, z * 0.0008);
     if (type === BIOMES.CRYSTAL) {
-        if (m > 0.3) h += Math.pow((m - 0.3) * 2, 2) * 120;
+        // Softer exponent (1.5) for more rounded but still tall peaks
+        if (m > 0.25) h += Math.pow((m - 0.25) * 1.8, 1.5) * 150;
     } else {
-        if (m > 0.65) h += Math.pow((m - 0.65) * 3, 2) * 80;
+        if (m > 0.5) h += Math.pow((m - 0.5) * 2.2, 1.8) * 110;
     }
     
-    let hills = noise2D(x * 0.012, z * 0.012);
-    if (hills > 0.5) h += (hills - 0.5) * 12;
+    // Mountain Detail - break up flat vertical walls
+    if (m > 0.35) {
+        h += noise2D(x * 0.03, z * 0.03) * 4;
+    }
+    
+    // Add extra rolling hills for "thickness"
+    let hills = noise2D(x * 0.008, z * 0.008);
+    if (hills > 0.4) h += (hills - 0.4) * 15;
+    
+    // Safety: No bottomless pits
+    if (h < -25) h = -25;
     
     return { type, h };
 }
@@ -107,8 +167,9 @@ for (let i = 0; i < posAttr.count; i++) {
     posAttr.setY(i, h);
     
     let col = new THREE.Color();
-    if (h < -3) col.setHex(0x3a2f24); // Dark sand
-    else if (h < 0) col.setHex(0x4a3b2c); // Dark dirt
+    if (h < -12) col.setHex(0x1a1a24); // Deep mud/ocean floor
+    else if (h < -7) col.setHex(0x3a2f24); // Wet sand/Shore
+    else if (h < 0) col.setHex(0x4a3b2c); // Dirt/Dry sand
     else {
         if (biome.type === BIOMES.MAGIC) col.setHex(0x1d0b36); // Darker magic grass
         else if (biome.type === BIOMES.GOLDEN) col.setHex(0x8a6a1c); // Darker golden grass
@@ -134,14 +195,29 @@ for (let i = 0; i < posAttr.count; i++) {
     }
     colorAttr.setXYZ(i, col.r, col.g, col.b);
 }
+terrainPosAttr = posAttr; // Set global reference for getMeshHeight
 terrainGeometry.computeVertexNormals();
-const terrain = new THREE.Mesh(terrainGeometry, new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true }));
+const terrain = new THREE.Mesh(terrainGeometry, new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: false }));
 terrain.receiveShadow = true;
 
 // Group for all 3D world objects — hidden on the menu screen
 const worldGroup = new THREE.Group();
 scene.add(worldGroup);
 worldGroup.add(terrain);
+
+// --- WATER SYSTEM ---
+const waterGeo = new THREE.PlaneGeometry(WORLD_SIZE * 4, WORLD_SIZE * 4);
+waterGeo.rotateX(-Math.PI / 2);
+const waterMat = new THREE.MeshStandardMaterial({
+    color: 0x0077be,
+    transparent: true,
+    opacity: 0.6,
+    roughness: 0.1,
+    metalness: 0.2
+});
+const water = new THREE.Mesh(waterGeo, waterMat);
+water.position.y = -10; // Global sea level
+worldGroup.add(water);
 
 // --- PLAYER ---
 const player = new THREE.Group();
@@ -329,6 +405,7 @@ const state = {
     isGrounded: false,
     health: 100,
     hunger: 100,
+    oxygen: 100,
     xp: 0,
     level: 1
 };
@@ -2106,7 +2183,9 @@ function spawnSettlements() {
                 
                 const hx = x + Math.cos(angle) * dist;
                 const hz = z + Math.sin(angle) * dist;
-                const hh = getTerrainHeight(hx, hz);
+                
+                // Fast height check
+                const hh = getMeshHeight(hx, hz);
                 
                 if (hh > 0 && Math.abs(hh - h) < 5) {
                     // Check collision
@@ -2170,7 +2249,9 @@ function spawnSettlements() {
     for (let i = 0; i < 6; i++) {
         const x = (Math.random() - 0.5) * WORLD_SIZE * 0.8;
         const z = (Math.random() - 0.5) * WORLD_SIZE * 0.8;
-        const h = getTerrainHeight(x, z);
+        
+        // Fast height check
+        const h = getMeshHeight(x, z);
         
         if (h > 8 && h < 30) {
             // Slope check for castle grounds
@@ -2262,64 +2343,65 @@ function createBirchTree() {
     return g;
 }
 
-function spawnDecor() {
-    const gridCellSize = 10;
-    const grid = new Map();
-    
-    function canPlace(x, z, radius) {
-        if (radius === 0) return true; // grass can overlap
-        const cx = Math.floor(x / gridCellSize);
-        const cz = Math.floor(z / gridCellSize);
-        for (let i = -1; i <= 1; i++) {
-            for (let j = -1; j <= 1; j++) {
-                const key = `${cx + i},${cz + j}`;
-                const cell = grid.get(key);
-                if (cell) {
-                    for (const item of cell) {
-                        const dx = item.x - x;
-                        const dz = item.z - z;
-                        if (Math.sqrt(dx*dx + dz*dz) < (radius + item.r)) {
-                            return false;
-                        }
+const gridCellSize = 10;
+const decorGrid = new Map();
+let rockCount = 0;
+let bushCount = 0;
+const dummyObj = new THREE.Object3D();
+const instColor = new THREE.Color();
+
+function canPlace(x, z, radius) {
+    if (radius === 0) return true; // grass can overlap
+    const cx = Math.floor(x / gridCellSize);
+    const cz = Math.floor(z / gridCellSize);
+    for (let i = -1; i <= 1; i++) {
+        for (let j = -1; j <= 1; j++) {
+            const key = `${cx + i},${cz + j}`;
+            const cell = decorGrid.get(key);
+            if (cell) {
+                for (const item of cell) {
+                    const dx = item.x - x;
+                    const dz = item.z - z;
+                    if (Math.sqrt(dx*dx + dz*dz) < (radius + item.r)) {
+                        return false;
                     }
                 }
             }
         }
-        return true;
     }
-    
-    function register(x, z, radius) {
-        if (radius === 0) return;
-        const cx = Math.floor(x / gridCellSize);
-        const cz = Math.floor(z / gridCellSize);
-        const key = `${cx},${cz}`;
-        if (!grid.has(key)) grid.set(key, []);
-        grid.get(key).push({x, z, r: radius});
-    }
+    return true;
+}
 
-    const rockGeo = new THREE.DodecahedronGeometry(1, 0);
-    const rockMat = new THREE.MeshStandardMaterial({ color: 0x757575, flatShading: true });
-    const rocksInstanced = new THREE.InstancedMesh(rockGeo, rockMat, 8000);
-    rocksInstanced.castShadow = true;
-    rocksInstanced.receiveShadow = true;
-    let rockCount = 0;
-    
-    const bushGeo = new THREE.IcosahedronGeometry(1, 0);
-    const bushMat = new THREE.MeshStandardMaterial({ color: 0xffffff, flatShading: true });
-    const bushesInstanced = new THREE.InstancedMesh(bushGeo, bushMat, 8000);
-    bushesInstanced.castShadow = false; // bushes don't need shadows
-    bushesInstanced.receiveShadow = false;
-    let bushCount = 0;
+function register(x, z, radius) {
+    if (radius === 0) return;
+    const cx = Math.floor(x / gridCellSize);
+    const cz = Math.floor(z / gridCellSize);
+    const key = `${cx},${cz}`;
+    if (!decorGrid.has(key)) decorGrid.set(key, []);
+    decorGrid.get(key).push({x, z, r: radius});
+}
 
-    const dummy = new THREE.Object3D();
-    const instColor = new THREE.Color();
+const rockGeo = new THREE.DodecahedronGeometry(1, 0);
+const rockMat = new THREE.MeshStandardMaterial({ color: 0x757575, flatShading: true });
+const rocksInstanced = new THREE.InstancedMesh(rockGeo, rockMat, 8000);
+rocksInstanced.castShadow = true;
+rocksInstanced.receiveShadow = true;
 
-    for (let i = 0; i < 8000; i++) {
+const bushGeo = new THREE.IcosahedronGeometry(1, 0);
+const bushMat = new THREE.MeshStandardMaterial({ color: 0xffffff, flatShading: true });
+const bushesInstanced = new THREE.InstancedMesh(bushGeo, bushMat, 8000);
+bushesInstanced.castShadow = false; 
+bushesInstanced.receiveShadow = false;
+
+function spawnDecorChunk(start, end) {
+    for (let i = start; i < end; i++) {
         const x = (Math.random() - 0.5) * WORLD_SIZE;
         const z = (Math.random() - 0.5) * WORLD_SIZE;
-        const biome = getBiomeData(x, z);
-        const h = biome.h;
-        if (h < 0) continue;
+        
+        // Fast height check
+        const h = getMeshHeight(x, z);
+        const biome = getBiomeData(x, z); 
+        if (h < 0) continue; 
         
         // Slope check to prevent floating on steep cliffs
         const hOffset1 = getTerrainHeight(x + 2, z);
@@ -2331,10 +2413,9 @@ function spawnDecor() {
         let isInstancedRock = false;
         let isInstancedBush = false;
         let bushBiome = null;
-        let radius = 2; // Default collision radius
+        let radius = 2; 
         const r = Math.random();
         
-        // Use noise to create clumps of trees (forests)
         const forestNoise = noise2D(x * 0.006, z * 0.006);
         const isForest = forestNoise > 0.3;
         
@@ -2362,7 +2443,6 @@ function spawnDecor() {
                 else if (r < 0.38) {
                     if (canPlace(x, z, 1)) {
                         const beeMesh = createBee();
-                        // Spawn bee slightly above ground
                         const beeEnt = new Entity(beeMesh, x, z, 'bee');
                         beeEnt.pos.y += 2 + Math.random() * 2;
                         beeMesh.position.y = beeEnt.pos.y;
@@ -2372,9 +2452,8 @@ function spawnDecor() {
                     continue;
                 }
                 else if (r < 0.42) { isInstancedBush = true; bushBiome = BIOMES.LUSH; radius = 1.5; }
-                else if (r < 0.9) { obj = createGrass(BIOMES.LUSH); radius = 0; } // Grass doesn't block
+                else if (r < 0.9) { obj = createGrass(BIOMES.LUSH); radius = 0; }
             } else {
-                // Open Plains
                 if (r < 0.01) { obj = createOakTree(); radius = 3.5; }
                 else if (r < 0.02) { obj = createBirchTree(); radius = 3; }
                 else if (r < 0.03) { obj = createPineTree(); radius = 2.5; }
@@ -2413,11 +2492,10 @@ function spawnDecor() {
         } else if (biome.type === BIOMES.GOLDEN) {
             if (r < 0.04) { obj = createGoldenTree(); radius = 3.5; }
             else if (r < 0.042) {
-                // Sky dragons
                 if (canPlace(x, z, 10)) {
                     const dragonMesh = createDragon();
                     const dragonEnt = new Entity(dragonMesh, x, z, 'dragon');
-                    dragonEnt.pos.y = 80 + Math.random() * 40; // High in sky
+                    dragonEnt.pos.y = 80 + Math.random() * 40; 
                     dragonMesh.position.y = dragonEnt.pos.y;
                     activeEntities.push(dragonEnt);
                     register(x, z, 10);
@@ -2449,11 +2527,11 @@ function spawnDecor() {
         if (isInstancedRock && rockCount < 8000) {
             if (canPlace(x, z, radius)) {
                 const size = 0.3 + Math.random() * 1.5;
-                dummy.position.set(x, h + size * 0.5, z);
-                dummy.rotation.set(Math.random(), Math.random(), Math.random());
-                dummy.scale.set(size, size * (0.6 + Math.random()*0.4), size);
-                dummy.updateMatrix();
-                rocksInstanced.setMatrixAt(rockCount, dummy.matrix);
+                dummyObj.position.set(x, h + size * 0.5, z);
+                dummyObj.rotation.set(Math.random(), Math.random(), Math.random());
+                dummyObj.scale.set(size, size * (0.6 + Math.random()*0.4), size);
+                dummyObj.updateMatrix();
+                rocksInstanced.setMatrixAt(rockCount, dummyObj.matrix);
                 rockCount++;
                 register(x, z, radius);
                 if (radius >= 1.5) registerCollider(x, z, radius * 0.55);
@@ -2469,12 +2547,12 @@ function spawnDecor() {
                 instColor.setHex(colHex);
                 
                 const size = 0.5 + Math.random() * 0.5;
-                dummy.position.set(x, h + size * 0.6, z);
-                dummy.rotation.set(0, 0, 0);
-                dummy.scale.set(size, size, size);
-                dummy.updateMatrix();
+                dummyObj.position.set(x, h + size * 0.6, z);
+                dummyObj.rotation.set(0, 0, 0);
+                dummyObj.scale.set(size, size, size);
+                dummyObj.updateMatrix();
                 
-                bushesInstanced.setMatrixAt(bushCount, dummy.matrix);
+                bushesInstanced.setMatrixAt(bushCount, dummyObj.matrix);
                 bushesInstanced.setColorAt(bushCount, instColor);
                 bushCount++;
                 register(x, z, radius);
@@ -2484,27 +2562,24 @@ function spawnDecor() {
         }
 
         if (obj && canPlace(x, z, radius)) {
-            // Sink objects slightly into the ground to hide floating edges
             const sinkOffset = radius > 0 ? 0.4 : 0; 
             obj.position.set(x, h - sinkOffset, z);
-            
-            // Freeze matrix so the engine doesn't recalculate it every frame (big perf boost)
             obj.traverse(child => { child.matrixAutoUpdate = false; child.updateMatrix(); });
             obj.matrixAutoUpdate = false;
             obj.updateMatrix();
             worldGroup.add(obj);
             resources.push(obj);
-            
             register(x, z, radius);
-            // Also register for player collision (trees, rocks, pillars — not grass)
             if (radius >= 1.5) registerCollider(x, z, radius * 0.55);
         }
     }
 
-    rocksInstanced.count = rockCount;
-    worldGroup.add(rocksInstanced);
-    bushesInstanced.count = bushCount;
-    worldGroup.add(bushesInstanced);
+    if (end >= 8000) {
+        rocksInstanced.count = rockCount;
+        worldGroup.add(rocksInstanced);
+        bushesInstanced.count = bushCount;
+        worldGroup.add(bushesInstanced);
+    }
 }
 
 function spawnEpicFloatingIsland() {
@@ -2676,15 +2751,18 @@ function runLoadingScreen(isFirstTime, onComplete) {
         function doPhase1() {
             // Run CHUNK iterations of the decor loop in each slice
             const end = Math.min(iter + CHUNK, TOTAL_ITERS);
-            // We call the real spawnDecor once — it handles everything.
-            // To show smooth progress we split it differently:
-            // Just show smooth fake progress during the single heavy call.
-            // We do it in a single rAF to let the browser paint first.
-            requestAnimationFrame(() => {
-                spawnDecor();
-                setProgress(phase1Weight * 100);
+            
+            spawnDecorChunk(iter, end);
+            
+            iter = end;
+            const progress = (iter / TOTAL_ITERS) * phase1Weight * 100;
+            setProgress(progress);
+
+            if (iter < TOTAL_ITERS) {
+                requestAnimationFrame(doPhase1);
+            } else {
                 requestAnimationFrame(doPhase2);
-            });
+            }
         }
 
         function doPhase2() {
@@ -3245,13 +3323,72 @@ function update(dt) {
         rightArm.rotation.x = -Math.PI * 0.8 * Math.sin(progress * Math.PI);
     }
 
-    state.velY -= 30 * dt;
+    // --- WATER & SWIMMING PHYSICS ---
+    const waterLevel = -10;
+    const isSwimming = state.pos.y < waterLevel - 0.5; // True if body is submerged
+    const headSubmerged = state.pos.y < waterLevel - 1.6; // True if head is submerged
+    
+    if (isSwimming) {
+        state.velY -= 8 * dt; // Much lower gravity in water (buoyancy)
+        state.velY *= 0.95;    // Water drag
+        
+        // Swim UP using Space
+        if (keys['Space']) {
+            state.velY += 12 * dt;
+            if (state.velY > 4) state.velY = 4; // Cap upward swim speed
+        }
+    } else {
+        state.velY -= 35 * dt; // Normal Gravity
+    }
+    
     state.pos.y += state.velY * dt;
-    const gh = getTerrainHeight(state.pos.x, state.pos.z);
-    if (state.pos.y <= gh) {
-        state.pos.y = gh;
+    
+    // Raycast DOWN from slightly above the player to find the VISUAL ground
+    const rayOrigin = new THREE.Vector3(state.pos.x, Math.max(state.pos.y, waterLevel) + 5, state.pos.z);
+    const rayDir = new THREE.Vector3(0, -1, 0);
+    const groundRaycaster = new THREE.Raycaster(rayOrigin, rayDir, 0, 40);
+    const groundHits = groundRaycaster.intersectObject(terrain, false);
+
+    let groundHeight = -100;
+    if (groundHits.length > 0) {
+        groundHeight = groundHits[0].point.y;
+    } else {
+        groundHeight = getTerrainHeight(state.pos.x, state.pos.z);
+    }
+    
+    // Collision Response
+    if (state.pos.y <= groundHeight) {
+        state.pos.y = groundHeight;
         state.velY = 0;
         state.isGrounded = true;
+    } else {
+        state.isGrounded = false;
+    }
+
+    // --- OXYGEN & DROWNING ---
+    const oxygenContainer = document.getElementById('oxygen-container');
+    const oxygenBar = document.getElementById('oxygen-bar');
+    
+    if (headSubmerged) {
+        state.oxygen -= 15 * dt; // Lose oxygen in ~7 seconds
+        if (oxygenContainer) oxygenContainer.classList.remove('hidden');
+    } else {
+        state.oxygen += 40 * dt; // Recover oxygen quickly
+        if (state.oxygen >= 100) {
+            state.oxygen = 100;
+            if (oxygenContainer) oxygenContainer.classList.add('hidden');
+        }
+    }
+    
+    state.oxygen = Math.max(0, state.oxygen);
+    if (oxygenBar) oxygenBar.style.width = state.oxygen + '%';
+    
+    // Drowning Damage
+    if (state.oxygen <= 0) {
+        state.health -= 15 * dt; // Take damage every second
+        if (oxygenContainer) oxygenContainer.classList.add('low-oxygen');
+    } else {
+        if (oxygenContainer) oxygenContainer.classList.remove('low-oxygen');
     }
 
     player.position.copy(state.pos);

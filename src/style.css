@@ -203,6 +203,16 @@ canvas {
 .health { background: linear-gradient(90deg, #ff5252, #ff1744); box-shadow: 0 0 10px rgba(255,23,68,0.5); }
 .hunger { background: linear-gradient(90deg, #ffa726, #fb8c00); }
 .xp { background: linear-gradient(90deg, #00e5ff, #00b8d4); }
+.oxygen { background: linear-gradient(90deg, #2979ff, #00e5ff); box-shadow: 0 0 10px rgba(0, 229, 255, 0.4); }
+
+.stat-container.low-oxygen {
+    animation: oxygenAlert 0.5s ease-in-out infinite;
+    border-color: #ff1744;
+}
+@keyframes oxygenAlert {
+    0%, 100% { transform: scale(1); background: rgba(255,0,0,0.2); }
+    50% { transform: scale(1.05); background: rgba(255,0,0,0.4); }
+}
 
 /* MAIN MENU */
 #main-menu {
