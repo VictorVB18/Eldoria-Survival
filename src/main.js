@@ -11,7 +11,7 @@ const noise2D = createNoise2D();
 
 // --- ENGINE SETUP ---
 const textureLoader = new THREE.TextureLoader();
-const menuBgTexture = textureLoader.load('menu_bg.png');
+const menuBgTexture = textureLoader.load(`${import.meta.env.BASE_URL}menu_bg.png`);
 
 const scene = new THREE.Scene();
 scene.background = menuBgTexture;
@@ -2777,7 +2777,7 @@ function runLoadingScreen(isFirstTime, onComplete) {
 const CUTSCENE_SCENES = [
     {
         location: 'ELDORIA — THE LUSH FOREST',
-        img: 'cutscene_forest.png',
+        img: `${import.meta.env.BASE_URL}cutscene_forest.png`,
         lines: [
             'A lone wanderer steps into the ancient forest of Eldoria...',
             'Trees older than memory tower overhead.',
@@ -2786,7 +2786,7 @@ const CUTSCENE_SCENES = [
     },
     {
         location: 'THE MOUNTAIN PASS',
-        img: 'cutscene_golem.png',
+        img: `${import.meta.env.BASE_URL}cutscene_golem.png`,
         lines: [
             'From the mountain passes, ancient guardians awaken.',
             'Crystal and stone, bound together by forgotten magic.',
@@ -2795,7 +2795,7 @@ const CUTSCENE_SCENES = [
     },
     {
         location: 'THE GOLDEN PLAINS — HIGH ABOVE',
-        img: 'cutscene_dragon.png',
+        img: `${import.meta.env.BASE_URL}cutscene_dragon.png`,
         lines: [
             'A shadow falls across the golden fields below.',
             'Wings wider than the oldest oak — a dragon circles.',
