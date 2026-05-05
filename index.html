@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eldoria: The Lost Realm</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Outfit:wght@300;400;700&display=swap" rel="stylesheet">
+  <script type="module" crossorigin src="/Eldoria-Survival/assets/index-BptWd0rK.js"></script>
+  <link rel="stylesheet" crossorigin href="/Eldoria-Survival/assets/index-DdpzTzA-.css">
+</head>
+<body>
+
+    <!-- ========== CINEMATIC FIRST-TIME LOADING SCREEN ========== -->
+    <div id="loading-cinematic" class="hidden">
+        <div class="lc-bg"></div>
+        <div class="lc-vignette"></div>
+        <div class="lc-content">
+            <div class="lc-logo-wrap">
+                <div class="lc-subtitle">AN EPIC ADVENTURE AWAITS</div>
+                <h1 class="lc-title">Eldoria</h1>
+                <div class="lc-tagline">THE LOST REALM</div>
+            </div>
+            <div class="lc-story">
+                <p id="lc-story-text">A world long forgotten stirs from its slumber...</p>
+            </div>
+            <div class="lc-progress-wrap">
+                <div class="lc-progress-label">GENERATING WORLD</div>
+                <div class="lc-progress-bg">
+                    <div id="lc-bar" class="lc-bar"></div>
+                </div>
+                <div id="lc-progress-pct" class="lc-pct">0%</div>
+            </div>
+        </div>
+        <div class="lc-particles" id="lc-particles"></div>
+    </div>
+
+    <!-- ========== RETURNING PLAYER LOADING SCREEN ========== -->
+    <div id="loading-returning" class="hidden">
+        <div class="lr-slideshow" id="lr-slideshow">
+            <div class="lr-slide active" style="background-image:url('/Eldoria-Survival/loading_forest.png')"></div>
+            <div class="lr-slide" style="background-image:url('/Eldoria-Survival/loading_dragon.png')"></div>
+            <div class="lr-slide" style="background-image:url('/Eldoria-Survival/loading_village.png')"></div>
+            <div class="lr-slide" style="background-image:url('/Eldoria-Survival/loading_island.png')"></div>
+        </div>
+        <div class="lr-overlay"></div>
+        <div class="lr-bottom">
+            <div class="lr-tip-label">💡 TIP</div>
+            <div id="lr-tip" class="lr-tip-text">Sprint with Shift to move faster across the world.</div>
+            <div class="lr-progress-bg">
+                <div id="lr-bar" class="lr-bar"></div>
+            </div>
+            <div class="lr-pct-row">
+                <span class="lr-title-small">ELDORIA: THE LOST REALM</span>
+                <span id="lr-pct">0%</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="ui">
+        <div id="hud" class="hidden">
+            <div class="stat-container">
+                <div class="label">HEALTH</div>
+                <div class="bar-bg"><div id="health-bar" class="bar health"></div></div>
+            </div>
+            <div class="stat-container">
+                <div class="label">HUNGER</div>
+                <div class="bar-bg"><div id="hunger-bar" class="bar hunger"></div></div>
+            </div>
+            <div id="level-display">Level 1</div>
+            <div class="stat-container">
+                <div class="label">XP</div>
+                <div class="bar-bg mini"><div id="xp-bar" class="bar xp"></div></div>
+            </div>
+            <div id="compass">
+                <div id="compass-needle">↑</div>
+            </div>
+        </div>
+
+
+        <div id="game-overlays"></div>
+
+        <!-- NPC Interact Prompt -->
+        <div id="interact-prompt" class="hidden">
+            <span class="interact-key">E</span>
+            <span class="interact-text">Talk</span>
+        </div>
+
+        <!-- NPC Dialog Box -->
+        <div id="dialog-box" class="hidden">
+            <div class="dialog-portrait">🧑‍🌾</div>
+            <div class="dialog-content">
+                <div class="dialog-name">Villager</div>
+                <div id="dialog-text"></div>
+            </div>
+            <div class="dialog-close">[E] Close</div>
+        </div>
+        
+        <div id="inventory" class="hidden">
+            <div id="character-pane">
+                <!-- Live 3D character will be visible here through the transparent background -->
+            </div>
+            
+            <div id="equipment-pane">
+                <div class="equip-slot head-slot"><span class="slot-label">HEAD</span></div>
+                <div class="equip-slot chest-slot"><span class="slot-label">CHEST</span></div>
+                <div class="equip-slot legs-slot"><span class="slot-label">LEGS</span></div>
+                <div class="equip-slot hands-slot"><span class="slot-label">WEAPON</span></div>
+            </div>
+
+            <div id="inventory-pane">
+                <h2>INVENTORY</h2>
+                <div id="items-grid"></div>
+                <div id="crafting">
+                    <h3>CRAFTING</h3>
+                    <div id="crafting-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="crosshair"></div>
+    </div>
+
+    <div id="main-menu">
+        <div class="menu-content">
+            <h1>ELDORIA</h1>
+            <p>The Lost Realm</p>
+            <div class="menu-buttons">
+                <button id="play-button">START ADVENTURE</button>
+                <button id="customize-button">CUSTOMIZE CHARACTER</button>
+                <button id="lore-button">LORE BOOK</button>
+                <button id="controls-button">CONTROLS</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="controls-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2>CONTROLS</h2>
+            <ul>
+                <li><strong>W, A, S, D</strong> - Move Around</li>
+                <li><strong>Spacebar</strong> - Jump</li>
+                <li><strong>Shift</strong> - Sprint</li>
+                <li><strong>Mouse</strong> - Look Around</li>
+                <li><strong>Click</strong> - Lock Mouse / Harvest</li>
+                <li><strong>B</strong> - Toggle Inventory</li>
+            </ul>
+            <button class="close-modal btn-outline">CLOSE</button>
+        </div>
+    </div>
+
+    <div id="lore-modal" class="hidden">
+        <div class="book-scene">
+            <div class="book" id="lore-book">
+                <!-- Left side (even-numbered pages) -->
+                <div class="book-left" id="book-left">
+                    <div class="page-corner page-corner-tl"></div>
+                    <div class="book-page-content" id="book-left-content"></div>
+                </div>
+                <!-- Right side (odd-numbered pages) -->
+                <div class="book-right" id="book-right">
+                    <div class="page-corner page-corner-tr"></div>
+                    <div class="book-page-content" id="book-right-content"></div>
+                </div>
+                <!-- Page flip overlay -->
+                <div class="page-flip" id="page-flip">
+                    <div class="page-flip-front" id="page-flip-front"></div>
+                    <div class="page-flip-back" id="page-flip-back"></div>
+                </div>
+            </div>
+            <!-- Navigation -->
+            <div class="book-nav">
+                <button class="book-btn" id="book-prev">&#8592; Prev</button>
+                <span class="book-page-num" id="book-page-num">1 / 1</span>
+                <button class="book-btn" id="book-next">Next &#8594;</button>
+            </div>
+            <button class="close-modal book-close-btn" id="lore-close-btn">&#x2715; Close Book</button>
+        </div>
+    </div>
+
+    <div id="customizer-modal" class="modal hidden">
+        <div class="customizer-panel">
+            <h2>CHARACTER CREATOR</h2>
+            
+            <div class="custom-group">
+                <label>Skin Tone</label>
+                <input type="color" id="color-skin" value="#ffccaa">
+            </div>
+
+            <div class="custom-group">
+                <label>Eye Color</label>
+                <input type="color" id="color-eyes" value="#000000">
+            </div>
+
+            <div class="custom-group">
+                <label>Hair Style</label>
+                <div class="custom-row">
+                    <select id="select-hair">
+                        <option value="none">Bald</option>
+                        <option value="short">Short</option>
+                        <option value="spiky" selected>Spiky</option>
+                        <option value="curly">Curly</option>
+                        <option value="long">Long</option>
+                        <option value="ponytail">Ponytail</option>
+                    </select>
+                    <input type="color" id="color-hair" value="#222222">
+                </div>
+            </div>
+
+            <div class="custom-group">
+                <label>Beard Style</label>
+                <div class="custom-row">
+                    <select id="select-beard">
+                        <option value="none" selected>Clean Shaven</option>
+                        <option value="stubble">Stubble</option>
+                        <option value="mustache">Mustache</option>
+                        <option value="goatee">Goatee</option>
+                        <option value="full">Full Beard</option>
+                    </select>
+                    <input type="color" id="color-beard" value="#222222">
+                </div>
+            </div>
+
+            <div class="custom-group">
+                <label>Shirt Color</label>
+                <input type="color" id="color-shirt" value="#556b2f">
+            </div>
+
+            <div class="custom-group">
+                <label>Pants Color</label>
+                <input type="color" id="color-pants" value="#8b4513">
+            </div>
+
+            <button id="finish-customize" class="close-modal btn-solid">DONE</button>
+        </div>
+    </div>
+
+    <!-- Save Slots Modal -->
+    <div id="save-slots-modal" class="modal hidden">
+        <div class="save-slots-container">
+            <div class="save-slots-header">
+                <div class="save-slots-icon">⚔️</div>
+                <div>
+                    <h2 id="save-slots-title">SELECT SAVE SLOT</h2>
+                    <p id="save-slots-subtitle">Choose a slot to begin your adventure</p>
+                </div>
+            </div>
+            <div class="save-slots-grid">
+                <div class="save-slot" id="slot-1" data-slot="1">
+                    <div class="slot-number">1</div>
+                    <div class="slot-info">
+                        <div class="slot-name">Empty</div>
+                        <div class="slot-meta"></div>
+                    </div>
+                    <button class="slot-delete hidden" data-slot="1" title="Delete save">DELETE</button>
+                </div>
+                <div class="save-slot" id="slot-2" data-slot="2">
+                    <div class="slot-number">2</div>
+                    <div class="slot-info">
+                        <div class="slot-name">Empty</div>
+                        <div class="slot-meta"></div>
+                    </div>
+                    <button class="slot-delete hidden" data-slot="2" title="Delete save">DELETE</button>
+                </div>
+                <div class="save-slot" id="slot-3" data-slot="3">
+                    <div class="slot-number">3</div>
+                    <div class="slot-info">
+                        <div class="slot-name">Empty</div>
+                        <div class="slot-meta"></div>
+                    </div>
+                    <button class="slot-delete hidden" data-slot="3" title="Delete save">DELETE</button>
+                </div>
+                <div class="save-slot" id="slot-4" data-slot="4">
+                    <div class="slot-number">4</div>
+                    <div class="slot-info">
+                        <div class="slot-name">Empty</div>
+                        <div class="slot-meta"></div>
+                    </div>
+                    <button class="slot-delete hidden" data-slot="4" title="Delete save">DELETE</button>
+                </div>
+            </div>
+            <button id="save-slots-back" class="btn-outline close-modal" style="margin-top:20px;width:200px;padding:10px;">← BACK</button>
+        </div>
+    </div>
+
+    <!-- In-Game Pause Menu -->
+    <div id="ingame-pause" class="modal hidden">
+        <div class="pause-panel">
+            <h2>PAUSED</h2>
+            <p class="pause-subtitle">Eldoria: The Lost Realm</p>
+            <div class="pause-buttons">
+                <button id="resume-button">▶ RESUME</button>
+                <button id="save-game-button">💾 SAVE GAME</button>
+                <button id="return-menu-button">⬅ MAIN MENU</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="app"></div>
+</body>
+</html>
