@@ -634,10 +634,7 @@ const beardStyles = {
     })()
 };
 
-function updateHair(style) {
-    hairGroup.clear();
-    if (hairStyles[style]) hairGroup.add(hairStyles[style]);
-}
+
 function updateBeard(style) {
     beardGroup.clear();
     if (beardStyles[style]) beardGroup.add(beardStyles[style]);
