@@ -341,9 +341,9 @@ canvas {
     justify-content: center;
     align-items: center;
     gap: 30px;
-    background: rgba(10, 10, 30, 0.6);
+    background: rgba(60, 30, 15, 0.8);
     backdrop-filter: blur(15px);
-    border: 1px solid var(--glass-border);
+    border: 2px solid #5c3a21;
     border-radius: 20px;
     padding: 20px;
 }
@@ -351,8 +351,8 @@ canvas {
 .equip-slot {
     width: 80px;
     height: 80px;
-    background: rgba(0, 0, 0, 0.4);
-    border: 2px solid var(--glass-border);
+    background: rgba(40, 20, 10, 0.8);
+    border: 2px solid #8b5a2b;
     border-radius: 12px;
     display: flex;
     justify-content: center;
@@ -364,8 +364,8 @@ canvas {
 }
 
 .equip-slot:hover {
-    border-color: #00f2ff;
-    box-shadow: 0 0 15px rgba(0, 242, 255, 0.3), inset 0 0 10px rgba(0, 242, 255, 0.2);
+    border-color: #ffb347;
+    box-shadow: 0 0 15px rgba(255, 179, 71, 0.3), inset 0 0 10px rgba(0, 0, 0, 0.8);
     transform: scale(1.05);
 }
 
@@ -382,32 +382,75 @@ canvas {
 #inventory-pane {
     flex: 1.5;
     background: 
-        /* Subtle fabric/grid texture */
-        linear-gradient(rgba(20, 20, 30, 0.85), rgba(10, 10, 15, 0.95)),
-        repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0, 0, 0, 0.2) 2px, rgba(0, 0, 0, 0.2) 4px);
-    backdrop-filter: blur(25px);
-    border: 2px solid #3a3a4a;
-    border-top: 5px solid #00f2ff; /* Glowing sci-fi clasp at the top */
-    border-bottom: 5px solid #1a1a25;
-    border-radius: 12px 12px 30px 30px; /* Bag shape */
+        linear-gradient(135deg, rgba(139, 69, 19, 0.95), rgba(101, 42, 14, 0.98)),
+        repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(0, 0, 0, 0.1) 4px, rgba(0, 0, 0, 0.1) 8px);
+    backdrop-filter: blur(15px);
+    border: 3px solid #4a2511;
+    border-top: 15px solid #3e1f0e; /* Thick leather flap */
+    border-bottom: 5px solid #2a1508;
+    border-radius: 20px 20px 40px 40px; /* Softer, rounder bag shape */
     padding: 30px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 10px;
     position: relative;
     box-shadow: 
-        inset 0 0 50px rgba(0,0,0,0.9), /* Deep inside shadow to look like a bag interior */
-        inset 0 10px 20px rgba(0,242,255,0.05),
-        0 20px 40px rgba(0,0,0,0.6);
+        inset 0 0 60px rgba(0,0,0,0.8), /* Deep inside shadow to look like a bag interior */
+        0 20px 50px rgba(0,0,0,0.7);
 }
+
+#inventory-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    border-bottom: 2px solid rgba(0,0,0,0.3);
+    padding-bottom: 10px;
+}
+
+.inv-tab {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px 8px 0 0;
+    color: rgba(255,255,255,0.6);
+    padding: 10px 20px;
+    font-family: 'Cinzel', serif;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    letter-spacing: 1px;
+}
+
+.inv-tab:hover {
+    color: white;
+    background: rgba(255,255,255,0.1);
+}
+
+.inv-tab.active {
+    background: #8b4513;
+    color: white;
+    border-color: #ffb347;
+    border-bottom: 3px solid #ffb347;
+}
+
+.tab-content {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+/* Custom scrollbar for inventory */
+.tab-content::-webkit-scrollbar { width: 6px; }
+.tab-content::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+.tab-content::-webkit-scrollbar-thumb { background: #5d4037; border-radius: 3px; }
+
 
 /* Add inner stitching/tactical seam effect */
 #inventory-pane::before {
     content: '';
     position: absolute;
     top: 15px; left: 15px; right: 15px; bottom: 15px;
-    border: 1px dashed rgba(255, 255, 255, 0.1);
-    border-radius: 8px 8px 20px 20px;
+    border: 2px dashed rgba(0, 0, 0, 0.4);
+    border-radius: 10px 10px 30px 30px;
     pointer-events: none;
 }
 
@@ -596,6 +639,37 @@ canvas {
 .btn-solid { background: #4caf50; border: none; color: white; }
 .btn-solid:hover { background: #66bb6a; }
 
+/* Options Panel */
+.option-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.toggle-btn {
+    padding: 8px 25px;
+    border-radius: 20px;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+}
+
+.toggle-btn.on {
+    background: #4caf50;
+    color: white;
+    box-shadow: 0 0 15px rgba(76, 175, 80, 0.4);
+}
+
+.toggle-btn.off {
+    background: #ff5252;
+    color: white;
+    box-shadow: 0 0 15px rgba(255, 82, 82, 0.4);
+}
+
 /* Lore Book */
 .book-container { perspective: 1500px; }
 .book {
@@ -660,6 +734,153 @@ canvas {
     color: white;
 }
 .custom-group input[type="color"] { padding: 0; height: 40px; cursor: pointer; }
+
+#death-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle, rgba(40,0,0,0.85) 0%, rgba(0,0,0,1) 100%);
+    opacity: 0;
+    transition: opacity 1.5s ease;
+    pointer-events: none;
+    text-align: center;
+}
+#death-screen.visible {
+    opacity: 1;
+    pointer-events: all;
+}
+.death-title {
+    color: #ff1744;
+    font-family: 'Cinzel', serif;
+    font-size: 5rem;
+    letter-spacing: 0.2em;
+    text-shadow: 0 0 20px rgba(255, 23, 68, 0.8), 0 0 40px rgba(0, 0, 0, 0.5);
+    margin: 0;
+    animation: deathPulse 3s ease-in-out infinite;
+}
+.death-lore {
+    color: #ccc;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.2rem;
+    font-style: italic;
+    opacity: 0.8;
+    margin-top: 1rem;
+    letter-spacing: 0.1em;
+}
+#respawn-timer {
+    color: #ff5252;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    margin-top: 3rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+@keyframes deathPulse {
+    0%, 100% { transform: scale(1); filter: brightness(1); }
+    50% { transform: scale(1.05); filter: brightness(1.3); }
+}
+
+/* ===== INVENTORY SLOTS ===== */
+#items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+    padding: 10px;
+}
+.inv-slot {
+    background: rgba(60, 35, 20, 0.6);
+    border: 1px solid rgba(139, 69, 19, 0.5);
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+    backdrop-filter: blur(5px);
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+}
+.inv-slot:hover {
+    transform: scale(1.05);
+    border-color: #ffb347;
+    background: rgba(139, 69, 19, 0.3);
+}
+.equipped-slot {
+    border-color: #ffb347 !important;
+    background: rgba(255, 179, 71, 0.15) !important;
+    box-shadow: 0 0 15px rgba(255, 179, 71, 0.3);
+}
+.item-icon {
+    font-size: 2rem;
+    margin-bottom: 5px;
+}
+.item-name {
+    font-size: 0.7rem;
+    color: #ffcc80;
+    font-weight: bold;
+    margin-bottom: 5px;
+    letter-spacing: 0.1em;
+}
+.item-count {
+    font-size: 1.2rem;
+    color: white;
+    font-family: 'Cinzel', serif;
+}
+
+/* ===== CRAFTING ===== */
+#crafting-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 15px;
+}
+.craft-btn {
+    background: rgba(74, 111, 165, 0.2);
+    border: 1px solid #4a6fa5;
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s;
+    font-family: 'Outfit', sans-serif;
+}
+.craft-btn:hover:not(:disabled) {
+    background: rgba(74, 111, 165, 0.4);
+    box-shadow: 0 0 15px rgba(74, 111, 165, 0.3);
+}
+.craft-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    filter: grayscale(1);
+}
+.recipe-req {
+    font-size: 0.75rem;
+    opacity: 0.7;
+}
+
+/* ===== RESOURCE POPUP ===== */
+.resource-pop {
+    position: fixed;
+    pointer-events: none;
+    color: #ffd54f;
+    font-family: 'Outfit', sans-serif;
+    font-weight: bold;
+    font-size: 1.1rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    transform: translate(-50%, -100%);
+    z-index: 10002;
+}
+
+.fade-out {
+    opacity: 0 !important;
+    transition: opacity 0.5s ease-out;
+}
 
 /* ===== SAVE SLOTS ===== */
 .save-slots-container {
@@ -943,6 +1164,28 @@ canvas {
     0%, 100% { opacity: 0.9; transform: translateX(-50%) scale(1); }
     50% { opacity: 1; transform: translateX(-50%) scale(1.04); }
 }
+
+/* ===== HORSE MOUNT PROMPT ===== */
+#mount-prompt {
+    position: absolute;
+    bottom: 33%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(60, 30, 5, 0.7);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 179, 71, 0.4);
+    border-radius: 20px;
+    padding: 8px 18px;
+    z-index: 50;
+    pointer-events: none;
+    animation: promptPulse 1.5s ease-in-out infinite;
+}
+
+#mount-prompt.hidden { display: none; }
+
 
 /* ===== NPC DIALOG BOX ===== */
 #dialog-box {
@@ -1237,3 +1480,106 @@ canvas {
     pointer-events: auto;
 }
 .book-close-btn:hover { color: white; border-color: rgba(255,255,255,0.5); }
+
+
+
+/* =========================================
+   UNIVERSAL LEATHER/MEDIEVAL OVERRIDES
+   ========================================= */
+.modal-content, 
+.customizer-panel, 
+.save-slots-container, 
+.pause-panel,
+#dialog-box {
+    background: 
+        linear-gradient(135deg, rgba(139, 69, 19, 0.95), rgba(101, 42, 14, 0.98)),
+        repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(0, 0, 0, 0.1) 4px, rgba(0, 0, 0, 0.1) 8px) !important;
+    backdrop-filter: blur(15px) !important;
+    border: 3px solid #4a2511 !important;
+    border-top: 15px solid #3e1f0e !important;
+    border-bottom: 5px solid #2a1508 !important;
+    border-radius: 20px 20px 40px 40px !important;
+    box-shadow: 
+        inset 0 0 60px rgba(0,0,0,0.8),
+        0 20px 50px rgba(0,0,0,0.7) !important;
+    position: relative;
+}
+
+.modal-content::before, 
+.customizer-panel::before, 
+.save-slots-container::before, 
+.pause-panel::before,
+#dialog-box::before {
+    content: '';
+    position: absolute;
+    top: 15px; left: 15px; right: 15px; bottom: 15px;
+    border: 2px dashed rgba(0, 0, 0, 0.4);
+    border-radius: 10px 10px 30px 30px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.modal-content > *, 
+.customizer-panel > *, 
+.save-slots-container > *, 
+.pause-panel > *,
+#dialog-box > * {
+    position: relative;
+    z-index: 1;
+}
+
+.modal-content h2, 
+.customizer-panel h2, 
+.save-slots-header h2, 
+.pause-panel h2,
+#dialog-name {
+    color: #ffcc80 !important;
+    text-shadow: 2px 2px 5px rgba(0,0,0,0.8) !important;
+    font-family: 'Cinzel', serif !important;
+}
+
+.custom-group label, .option-row span, .save-slots-header p, .pause-subtitle, #dialog-text {
+    color: #e6d5b8 !important;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+}
+
+.close-modal, .btn-outline, .btn-solid, #finish-customize {
+    background-image: url('/wood.png') !important;
+    background-size: cover !important;
+    background-color: #5c3a21 !important;
+    border: 2px solid #3e2723 !important;
+    color: #fff !important;
+    text-shadow: 1px 1px 3px rgba(0,0,0,1) !important;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5), inset 0 0 10px rgba(0,0,0,0.8) !important;
+    border-radius: 8px !important;
+    font-family: 'Outfit', sans-serif !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.15rem !important;
+    transition: all 0.3s ease !important;
+}
+
+.close-modal:hover, .btn-outline:hover, .btn-solid:hover, #finish-customize:hover {
+    transform: scale(1.05) translateY(-2px) !important;
+    filter: brightness(1.2) !important;
+    box-shadow: 0 8px 15px rgba(0,0,0,0.6), inset 0 0 10px rgba(255,255,255,0.2) !important;
+}
+
+.custom-group select, .custom-group input[type="color"] {
+    background: rgba(40, 20, 10, 0.8) !important;
+    border: 1px solid #8b5a2b !important;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.8) !important;
+    color: #ffcc80 !important;
+}
+
+.toggle-btn.on {
+    background: #2e7d32 !important;
+    border: 2px solid #1b5e20 !important;
+    color: #fff !important;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.8) !important;
+}
+.toggle-btn.off {
+    background: #b71c1c !important;
+    border: 2px solid #7f0000 !important;
+    color: #fff !important;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.8) !important;
+}

@@ -99,6 +99,12 @@
             </div>
             <div class="dialog-close">[E] Close</div>
         </div>
+
+        <!-- Horse Mount Prompt -->
+        <div id="mount-prompt" class="hidden">
+            <span class="interact-key">E</span>
+            <span class="interact-text">Mount Horse</span>
+        </div>
         
         <div id="inventory" class="hidden">
             <div id="character-pane">
@@ -109,20 +115,24 @@
                 <div class="equip-slot head-slot"><span class="slot-label">HEAD</span></div>
                 <div class="equip-slot chest-slot"><span class="slot-label">CHEST</span></div>
                 <div class="equip-slot legs-slot"><span class="slot-label">LEGS</span></div>
-                <div class="equip-slot hands-slot"><span class="slot-label">WEAPON</span></div>
+                <div class="equip-slot hands-slot" id="weapon-slot" onclick="unequipItem()"><span class="slot-label">WEAPON</span></div>
             </div>
 
             <div id="inventory-pane">
-                <h2>INVENTORY</h2>
-                <div id="items-grid"></div>
-                <div id="crafting">
-                    <h3>CRAFTING</h3>
+                <div id="inventory-tabs">
+                    <button class="inv-tab active" data-tab="items-grid">🎒 BAG</button>
+                    <button class="inv-tab" data-tab="crafting">🛠️ CRAFT</button>
+                </div>
+
+                <div id="items-grid" class="tab-content"></div>
+                
+                <div id="crafting" class="tab-content hidden">
                     <div id="crafting-list"></div>
                 </div>
             </div>
         </div>
 
-        <div id="crosshair"></div>
+        <div id="crosshair" class="hidden"></div>
     </div>
 
     <div id="main-menu">
@@ -145,11 +155,14 @@
             <ul>
                 <li><strong>W, A, S, D</strong> - Move Around</li>
                 <li><strong>Spacebar</strong> - Jump</li>
-                <li><strong>Shift</strong> - Sprint</li>
+                <li><strong>Shift</strong> - Sprint / Dismount Horse</li>
                 <li><strong>Mouse</strong> - Look Around</li>
-                <li><strong>Click</strong> - Lock Mouse / Harvest</li>
+                <li><strong>Click</strong> - Attack / Harvest / Tame Horse (hold 🥕)</li>
+                <li><strong>E</strong> - Talk to Villager / Mount &amp; Dismount Horse</li>
                 <li><strong>B</strong> - Toggle Inventory</li>
+                <li><strong>Esc</strong> - Pause Menu</li>
             </ul>
+            <p style="font-size:0.8rem;opacity:0.7;margin-top:1rem;">🐴 <em>Find carrots near villages, then click a wild horse to tame it!</em></p>
             <button class="close-modal btn-outline">CLOSE</button>
         </div>
     </div>
@@ -296,12 +309,37 @@
             <div class="pause-buttons">
                 <button id="resume-button">▶ RESUME</button>
                 <button id="save-game-button">💾 SAVE GAME</button>
+                <button id="options-button">⚙️ OPTIONS</button>
                 <button id="return-menu-button">⬅ MAIN MENU</button>
             </div>
         </div>
     </div>
 
     <div id="app"></div>
+    <!-- DEATH SCREEN -->
+    <div id="death-screen" class="hidden">
+        <div class="death-content">
+            <h1 class="death-title">YOU PERISHED</h1>
+            <p class="death-lore">The shadows of Eldoria claim another soul...</p>
+            <div id="respawn-timer">Respawning in 5s</div>
+        </div>
+    </div>
+
+    <!-- Options Modal -->
+    <div id="options-modal" class="modal hidden">
+        <div class="modal-content options-panel">
+            <h2>OPTIONS</h2>
+            <div class="option-row">
+                <span>MUSIC</span>
+                <button id="music-toggle-btn" class="toggle-btn on">ON</button>
+            </div>
+            <div class="option-row" style="margin-top:20px;">
+                <button id="options-controls-btn" class="btn-outline" style="width:100%;">VIEW CONTROLS</button>
+            </div>
+            <button id="close-options-btn" class="close-modal btn-solid" style="margin-top:30px;">CLOSE</button>
+        </div>
+    </div>
+
     <script type="module" src="/src/main.js"></script>
 </body>
 </html>
