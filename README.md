@@ -13,7 +13,10 @@ An immersive 3D survival RPG set in the mystical realm of Eldoria. Explore lush 
 ## ✨ Features
 *   🎬 **Cinematic Intro**: A movie-style storytelling sequence for all new characters.
 *   🌍 **Procedural World**: Explore diverse biomes including Magic Forests, Golden Plains, and Crystal Highlands.
-*   🐉 **Ancient Creatures**: Encounter roaming giants and flying dragons.
+*   🏰 **Capital City**: Visit the grand city at the center of the world featuring a castle, blacksmith, and church.
+*   🎒 **Tabbed Inventory**: A redesigned backpack with separate 'Bag' and 'Crafting' views for better organization.
+*   💰 **Merchant Trading**: Trade your gathered resources with the city Merchant for rare items.
+*   📦 **Loot System**: Find hidden chests in Ruins and Crystal Caves containing essential survival gear.
 *   💾 **Save System**: 4 persistent save slots to track your progress.
 *   🎭 **Character Customization**: Personalize your adventurer's appearance.
 *   🌅 **Dynamic World**: Real-time lighting and atmosphere transitions.
