@@ -4309,9 +4309,6 @@ function spawnCapitalCity() {
         activeEntities.push(new Entity(v, vx, vz, 'villager'));
     }
 
-    cityGroup.traverse(child => { child.matrixAutoUpdate = false; child.updateMatrix(); });
-    cityGroup.matrixAutoUpdate = false;
-    cityGroup.updateMatrix();
     worldGroup.add(cityGroup);
 }
 
