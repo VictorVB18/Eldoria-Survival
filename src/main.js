@@ -550,64 +550,57 @@ head.add(hairGroup);
 const beardGroup = new THREE.Group();
 head.add(beardGroup);
 
-const hairStyles = {
-    none: new THREE.Group(),
-    short: (() => {
-        const g = new THREE.Group();
-        const main = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.15, 0.55), hairMat);
+function createDetailedHair(style, color) {
+    const g = new THREE.Group();
+    const mat = new THREE.MeshStandardMaterial({ color: color });
+    
+    if (style === 'short') {
+        const main = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.15, 0.55), mat);
         main.position.y = 0.25;
         g.add(main);
-        return g;
-    })(),
-    spiky: (() => {
-        const g = new THREE.Group();
-        // Base hair layer
-        const base = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.1, 0.52), hairMat);
+    } else if (style === 'spiky') {
+        const base = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.1, 0.52), mat);
         base.position.y = 0.25;
         g.add(base);
-        // Stylish spiky chunks
         const positions = [
             [0.15, 0.3, 0.15], [-0.15, 0.3, 0.15],
             [0.15, 0.3, -0.15], [-0.15, 0.3, -0.15],
-            [0, 0.35, 0]
+            [0, 0.35, 0], [0.2, 0.28, 0], [-0.2, 0.28, 0]
         ];
         positions.forEach(p => {
-            const spike = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, 0.2), hairMat);
+            const spike = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.25, 0.18), mat);
             spike.position.set(p[0], p[1], p[2]);
-            spike.rotation.set(Math.random() * 0.5, Math.random() * 0.5, Math.random() * 0.5);
+            spike.rotation.set(Math.random() * 0.4, Math.random() * 0.4, Math.random() * 0.4);
             g.add(spike);
         });
-        return g;
-    })(),
-    curly: (() => {
-        const g = new THREE.Group();
-        for (let i = 0; i < 15; i++) {
-            const curl = new THREE.Mesh(new THREE.SphereGeometry(0.1, 5, 5), hairMat);
-            curl.position.set((Math.random() - 0.5) * 0.4, 0.25 + Math.random() * 0.1, (Math.random() - 0.5) * 0.4);
+    } else if (style === 'curly') {
+        for (let i = 0; i < 18; i++) {
+            const curl = new THREE.Mesh(new THREE.SphereGeometry(0.12, 6, 6), mat);
+            curl.position.set((Math.random() - 0.5) * 0.45, 0.25 + Math.random() * 0.15, (Math.random() - 0.5) * 0.45);
             g.add(curl);
         }
-        return g;
-    })(),
-    long: (() => {
-        const g = new THREE.Group();
-        const main = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.2, 0.55), hairMat);
+    } else if (style === 'long') {
+        const main = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.2, 0.55), mat);
         main.position.y = 0.25;
-        const back = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.6, 0.2), hairMat);
+        const back = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.6, 0.15), mat);
         back.position.set(0, -0.1, -0.25);
         g.add(main, back);
-        return g;
-    })(),
-    ponytail: (() => {
-        const g = new THREE.Group();
-        const main = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.15, 0.55), hairMat);
+    } else if (style === 'ponytail') {
+        const main = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.15, 0.55), mat);
         main.position.y = 0.25;
-        const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.1, 0.4, 5), hairMat);
-        tail.position.set(0, 0.1, -0.3);
-        tail.rotation.x = -Math.PI / 4;
+        const tail = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.4, 0.15), mat);
+        tail.position.set(0, 0.1, -0.35);
+        tail.rotation.x = -0.3;
         g.add(main, tail);
-        return g;
-    })()
-};
+    }
+    return g;
+}
+
+function updateHair(style) {
+    hairGroup.clear();
+    const hair = createDetailedHair(style, hairMat.color);
+    hairGroup.add(hair);
+}
 
 const beardStyles = {
     none: new THREE.Group(),
@@ -2803,10 +2796,12 @@ function createVillager() {
     nose.position.set(0, 1.75, 0.28);
     g.add(nose);
     
-    // Hair
-    const hairMat = new THREE.MeshStandardMaterial({ color: [0x111111, 0x4a3b2c, 0xc68642, 0xaaaaaa][Math.floor(Math.random()*4)] });
-    const hair = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.15, 0.55), hairMat);
-    hair.position.y = 1.95;
+    // Detailed Hair
+    const hairColor = [0x111111, 0x4a3b2c, 0xc68642, 0xaaaaaa][Math.floor(Math.random()*4)];
+    const styles = ['short', 'spiky', 'curly', 'long', 'ponytail'];
+    const style = styles[Math.floor(Math.random() * styles.length)];
+    const hair = createDetailedHair(style, hairColor);
+    hair.position.y = 1.75;
     g.add(hair);
 
     // Hat
