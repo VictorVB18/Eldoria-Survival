@@ -500,6 +500,10 @@ const worldGroup = new THREE.Group();
 scene.add(worldGroup);
 worldGroup.add(terrain);
 
+// Optimization: Dedicated group for camera/interaction collisions
+const collisionGroup = new THREE.Group();
+scene.add(collisionGroup);
+
 // --- WATER SYSTEM ---
 const waterGeo = new THREE.PlaneGeometry(WORLD_SIZE * 4, WORLD_SIZE * 4);
 waterGeo.rotateX(-Math.PI / 2);
@@ -1536,33 +1540,6 @@ window.addEventListener('keydown', (e) => {
 // --- DECORATORS & RESOURCES ---
 const resources = [];
 
-function createGrass(biomeType) {
-    const g = new THREE.Group();
-    let col = 0x4caf50;
-    if (biomeType === BIOMES.MAGIC) col = 0x2a004f;
-    if (biomeType === BIOMES.GOLDEN) col = 0xd4af37;
-
-    const mat = new THREE.MeshStandardMaterial({ color: col, flatShading: true, side: THREE.DoubleSide });
-
-    if (Math.random() > 0.5) {
-        // Triangle blades
-        for (let i = 0; i < 3; i++) {
-            const blade = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.6 + Math.random() * 0.4, 3), mat);
-            blade.position.set((Math.random() - 0.5) * 0.5, 0.3, (Math.random() - 0.5) * 0.5);
-            blade.rotation.set((Math.random() - 0.5) * 0.5, Math.random() * Math.PI, (Math.random() - 0.5) * 0.5);
-            g.add(blade);
-        }
-    } else {
-        // Flat cross planes
-        const planeGeo = new THREE.PlaneGeometry(0.8, 0.8);
-        const plane1 = new THREE.Mesh(planeGeo, mat);
-        plane1.position.y = 0.4;
-        const plane2 = plane1.clone();
-        plane2.rotation.y = Math.PI / 2;
-        g.add(plane1, plane2);
-    }
-    return g;
-}
 
 function createPineTree() {
     const g = new THREE.Group();
@@ -2293,6 +2270,8 @@ function createCastleKeep() {
     arch.position.set(0, 6, 20);
     g.add(arch);
     
+    collisionGroup.add(g.clone()); // Add a copy to collision group for camera/interaction
+    
     // Corner Turrets for Base Tier
     const tGeo = new THREE.CylinderGeometry(4, 4, 25, 8);
     const rGeo = new THREE.ConeGeometry(5, 8, 8);
@@ -2393,17 +2372,11 @@ class Entity {
         worldGroup.add(this.mesh);
     }
 
-    update(dt, playerPos) {
-        // Distance check for performance - tighter culling
+    update(dt, playerPos, isLowFreq) {
         const dist = this.pos.distanceTo(playerPos);
-        if (dist > 250) {
-            this.mesh.visible = false;
-            return;
-        }
-        this.mesh.visible = true;
-
-        // Stop AI if still pretty far
-        if (dist > 150 && this.type !== 'dragon') return;
+        
+        // Skip logic if this is a low-frequency update and we are far
+        if (isLowFreq && dist > 100 && this.type !== 'dragon') return;
 
         this.timer -= dt;
 
@@ -4310,6 +4283,15 @@ function spawnCapitalCity() {
     }
 
     worldGroup.add(cityGroup);
+    collisionGroup.add(cityGroup.clone()); // Simplified collision copy
+
+    // Static optimization
+    cityGroup.traverse(child => {
+        child.matrixAutoUpdate = false;
+        child.updateMatrix();
+    });
+    cityGroup.matrixAutoUpdate = false;
+    cityGroup.updateMatrix();
 }
 
 function spawnSettlements() {
@@ -4493,10 +4475,15 @@ function spawnSettlements() {
                 castleGroup.add(wall);
             });
 
-            castleGroup.traverse(child => { child.matrixAutoUpdate = false; child.updateMatrix(); });
+            castleGroup.traverse(child => { 
+                child.matrixAutoUpdate = false; 
+                child.updateMatrix(); 
+                if (child.isMesh) child.castShadow = true;
+            });
             castleGroup.matrixAutoUpdate = false;
             castleGroup.updateMatrix();
             worldGroup.add(castleGroup);
+            collisionGroup.add(castleGroup.clone());
         }
     }
 }
@@ -4593,6 +4580,7 @@ bushesInstanced.receiveShadow = false;
 
 const DECOR_CHUNK_SIZE = 150;
 const decorChunks = {};
+
 function getDecorChunk(x, z) {
     const cx = Math.floor(x / DECOR_CHUNK_SIZE);
     const cz = Math.floor(z / DECOR_CHUNK_SIZE);
@@ -4603,6 +4591,32 @@ function getDecorChunk(x, z) {
         worldGroup.add(decorChunks[key]);
     }
     return decorChunks[key];
+}
+
+function createGrass(biomeType) {
+    const g = new THREE.Group();
+    const colors = [0x4caf50, 0x8bc34a, 0x388e3c];
+    if (biomeType === BIOMES.MAGIC) colors[0] = 0x9c27b0;
+    if (biomeType === BIOMES.GOLDEN) colors[0] = 0xffd54f;
+
+    const bladeGeo = new THREE.PlaneGeometry(0.2, 0.8);
+    const mat = new THREE.MeshStandardMaterial({ 
+        color: colors[0], 
+        side: THREE.DoubleSide, 
+        transparent: true, 
+        alphaTest: 0.5 
+    });
+
+    for(let i=0; i<3; i++) {
+        const m = new THREE.Mesh(bladeGeo, mat);
+        m.rotation.y = (i/3) * Math.PI;
+        m.position.y = 0.4;
+        m.castShadow = false; // LAG FIX: No shadows for grass
+        m.receiveShadow = false;
+        g.add(m);
+    }
+    g.scale.set(2, 2.5, 2);
+    return g;
 }
 
 function spawnDecorChunk(start, end) {
@@ -4882,7 +4896,8 @@ function spawnDecorChunk(start, end) {
 
 function spawnEpicFloatingIsland() {
     const mainGroup = new THREE.Group();
-    mainGroup.position.set(400, 180, -400);
+    // Relocated further back and to the side to avoid obstructing Capital City view
+    mainGroup.position.set(550, 240, -750);
 
     const mainRadius = 60;
     const mainDepth = 40;
@@ -5687,65 +5702,43 @@ function update(dt) {
 
     // Update Entities & UI Overlays
     if (gameStarted) {
+        const frameSkip = frameCount % 3 === 0; // Low-frequency update trigger
+
         activeEntities.forEach(ent => {
             const dist = ent.pos.distanceTo(player.position);
 
-            // TIGHT PERFORMANCE CULLING
-            if (dist > 200) {
+            // 1. HARD CULLING (Visibility & UI)
+            if (dist > 250) {
                 ent.mesh.visible = false;
+                if (ent.hpBarEl) {
+                    ent.hpBarEl.style.display = 'none';
+                    ent.hpBarEl.style.opacity = '0';
+                }
+                return;
+            }
+
+            ent.mesh.visible = true;
+
+            // 2. LOGIC OPTIMIZATION (AI & Movement)
+            // Skip AI entirely if very far
+            if (dist > 160 && ent.type !== 'dragon') {
                 if (ent.hpBarEl) ent.hpBarEl.style.display = 'none';
                 return;
             }
-            ent.mesh.visible = true;
-            if (ent.hpBarEl) ent.hpBarEl.style.display = 'block';
 
-            // Skip AI for mid-distance (unless it's a big entity)
-            if (dist > 120 && ent.type !== 'dragon') {
+            // Low-frequency updates for moderately far entities
+            const isLowFreq = dist > 80;
+            if (isLowFreq && !frameSkip && ent.type !== 'dragon') {
+                // Keep health bars updated even on skipped logic frames for smoothness
+                if (ent.showHealthTimer > 0) updateEntityHealthBar(ent, dt);
                 return;
             }
 
-            ent.update(dt, player.position);
+            ent.update(dt, player.position, isLowFreq);
 
-            // Health Bar Logic
+            // 3. HEALTH BAR LOGIC
             if (ent.showHealthTimer > 0) {
-                ent.showHealthTimer -= dt;
-
-                if (!ent.hpBarEl) {
-                    ent.hpBarEl = document.createElement('div');
-                    ent.hpBarEl.className = 'hp-bar-container';
-
-                    const fill = document.createElement('div');
-                    fill.className = 'hp-bar-fill';
-                    ent.hpBarEl.appendChild(fill);
-
-                    document.getElementById('game-overlays').appendChild(ent.hpBarEl);
-                }
-
-                // Map 3D pos to 2D
-                const hpPos = ent.pos.clone();
-                hpPos.y += 2.5; // Above head
-                hpPos.project(camera);
-
-                // Check if behind camera
-                if (hpPos.z > 1) {
-                    ent.hpBarEl.style.display = 'none';
-                } else {
-                    ent.hpBarEl.style.display = 'block';
-                    const x = (hpPos.x * .5 + .5) * window.innerWidth;
-                    const y = (hpPos.y * -.5 + .5) * window.innerHeight;
-                    ent.hpBarEl.style.left = `${x}px`;
-                    ent.hpBarEl.style.top = `${y}px`;
-
-                    // Update fill width
-                    const hpPercent = Math.max(0, ent.mesh.userData.hp / ent.mesh.userData.maxHp) * 100;
-                    ent.hpBarEl.firstChild.style.width = `${hpPercent}%`;
-                    ent.hpBarEl.style.opacity = Math.min(1.0, ent.showHealthTimer);
-                }
-
-                if (ent.showHealthTimer <= 0) {
-                    ent.hpBarEl.remove();
-                    ent.hpBarEl = null;
-                }
+                updateEntityHealthBar(ent, dt);
             }
         });
 
@@ -5981,7 +5974,8 @@ function update(dt) {
         const maxDist = originWorld.distanceTo(idealWorld);
 
         const raycaster = new THREE.Raycaster(originWorld, dir, 0.1, maxDist);
-        const intersects = raycaster.intersectObject(worldGroup, true);
+        // PERFORMANCE FIX: Only raycast against collisionGroup + terrain
+        const intersects = raycaster.intersectObjects([collisionGroup, terrain], true);
 
         let finalLocal = idealLocal;
         if (intersects.length > 0) {
@@ -6034,7 +6028,51 @@ function update(dt) {
     }
 }
 
+let frameCount = 0;
+
+function updateEntityHealthBar(ent, dt) {
+    ent.showHealthTimer -= dt;
+
+    if (!ent.hpBarEl) {
+        ent.hpBarEl = document.createElement('div');
+        ent.hpBarEl.className = 'hp-bar-container';
+
+        const fill = document.createElement('div');
+        fill.className = 'hp-bar-fill';
+        ent.hpBarEl.appendChild(fill);
+
+        document.getElementById('game-overlays').appendChild(ent.hpBarEl);
+    }
+
+    // Map 3D pos to 2D
+    const hpPos = ent.pos.clone();
+    hpPos.y += 2.5; // Above head
+    hpPos.project(camera);
+
+    // Check if behind camera
+    if (hpPos.z > 1) {
+        ent.hpBarEl.style.display = 'none';
+    } else {
+        ent.hpBarEl.style.display = 'block';
+        const x = (hpPos.x * .5 + .5) * window.innerWidth;
+        const y = (hpPos.y * -.5 + .5) * window.innerHeight;
+        ent.hpBarEl.style.left = `${x}px`;
+        ent.hpBarEl.style.top = `${y}px`;
+
+        // Update fill width
+        const hpPercent = Math.max(0, ent.mesh.userData.hp / ent.mesh.userData.maxHp) * 100;
+        ent.hpBarEl.firstChild.style.width = `${hpPercent}%`;
+        ent.hpBarEl.style.opacity = Math.min(1.0, ent.showHealthTimer);
+    }
+
+    if (ent.showHealthTimer <= 0) {
+        ent.hpBarEl.remove();
+        ent.hpBarEl = null;
+    }
+}
+
 function animate() {
+    frameCount++;
     requestAnimationFrame(animate);
     const time = performance.now();
     const dt = Math.min(time - lastTime, 100) / 1000;
@@ -6335,7 +6373,8 @@ window.addEventListener('mousedown', (e) => {
 
     // --- RESOURCE HARVESTING ---
     if (!hit) {
-        // Find ALL objects hit by the ray
+        // PERFORMANCE FIX: Only raycast against worldGroup (but not its children unless harvestType exists)
+        // or specifically against harvestable instanced meshes
         const intersects = raycaster.intersectObjects([worldGroup, rocksInstanced, bushesInstanced], true);
 
         // Find the FIRST object that has a harvestType (ignoring terrain)
