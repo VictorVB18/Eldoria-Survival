@@ -4919,7 +4919,8 @@ function spawnEpicFloatingIsland() {
         const angle = (i / 5) * Math.PI * 2;
         const dist = mainRadius + 30 + Math.random() * 20;
         const satGroup = new THREE.Group();
-        satGroup.position.set(Math.cos(angle) * dist, 130 + Math.random() * 40, Math.sin(angle) * dist);
+        // Position relative to mainGroup now
+        satGroup.position.set(Math.cos(angle) * dist, (Math.random() - 0.5) * 20, Math.sin(angle) * dist);
 
         const satRad = 10 + Math.random() * 15;
         const satDepth = satRad * 0.8;
@@ -4944,8 +4945,7 @@ function spawnEpicFloatingIsland() {
             tree.position.set(0, 1, 0);
             satGroup.add(tree);
         }
-        scene.add(satGroup);
-        worldGroup.add(satGroup);
+        mainGroup.add(satGroup);
     }
 }
 
