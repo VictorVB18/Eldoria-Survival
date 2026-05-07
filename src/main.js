@@ -4639,7 +4639,7 @@ function spawnDecorChunk(start, end) {
                 if (r < 0.15) { obj = createOakTree(); radius = 3.5; }
                 else if (r < 0.25) { obj = createBirchTree(); radius = 3; }
                 else if (r < 0.35) { obj = createPineTree(); radius = 2.5; }
-                else if (r < 0.36) {
+                else if (r < 0.365) {
                     if (canPlace(x, z, 2)) {
                         const stagMesh = createStag();
                         activeEntities.push(new Entity(stagMesh, x, z, 'stag'));
@@ -4647,7 +4647,7 @@ function spawnDecorChunk(start, end) {
                     }
                     continue;
                 }
-                else if (r < 0.363) {
+                else if (r < 0.370) {
                     if (canPlace(x, z, 2)) {
                         const boarMesh = createBoar();
                         activeEntities.push(new Entity(boarMesh, x, z, 'boar'));
@@ -4655,7 +4655,7 @@ function spawnDecorChunk(start, end) {
                     }
                     continue;
                 }
-                else if (r < 0.366) {
+                else if (r < 0.375) {
                     if (canPlace(x, z, 3)) {
                         const bearMesh = createBear();
                         activeEntities.push(new Entity(bearMesh, x, z, 'bear'));
@@ -4663,7 +4663,7 @@ function spawnDecorChunk(start, end) {
                     }
                     continue;
                 }
-                else if (r < 0.370) {
+                else if (r < 0.380) {
                     if (canPlace(x, z, 1)) {
                         const foxMesh = createFox();
                         activeEntities.push(new Entity(foxMesh, x, z, 'fox'));
@@ -4671,7 +4671,7 @@ function spawnDecorChunk(start, end) {
                     }
                     continue;
                 }
-                else if (r < 0.375) {
+                else if (r < 0.390) {
                     if (canPlace(x, z, 1)) {
                         const rabbitMesh = createRabbit();
                         activeEntities.push(new Entity(rabbitMesh, x, z, 'rabbit'));
@@ -4697,7 +4697,7 @@ function spawnDecorChunk(start, end) {
                 if (r < 0.01) { obj = createOakTree(); radius = 3.5; }
                 else if (r < 0.02) { obj = createBirchTree(); radius = 3; }
                 else if (r < 0.03) { obj = createPineTree(); radius = 2.5; }
-                else if (r < 0.032) {
+                else if (r < 0.035) {
                     // Spawn wild horse on lush plains
                     if (canPlace(x, z, 3)) {
                         const horseColor = [0x8b6914, 0x6d3a1a, 0x222222, 0xd2b48c, 0x8b0000][Math.floor(Math.random() * 5)];
@@ -4714,7 +4714,7 @@ function spawnDecorChunk(start, end) {
         } else if (biome.type === BIOMES.MAGIC) {
             if (isForest) {
                 if (r < 0.08) { obj = createFantasyTree(); radius = 3.5; }
-                else if (r < 0.085) {
+                else if (r < 0.095) {
                     if (canPlace(x, z, 2)) {
                         const wolfMesh = createShadowWolf();
                         activeEntities.push(new Entity(wolfMesh, x, z, 'wolf'));
@@ -4726,7 +4726,7 @@ function spawnDecorChunk(start, end) {
                 else if (r < 0.8) { obj = createGrass(BIOMES.MAGIC); radius = 0; }
             } else {
                 if (r < 0.01) { obj = createFantasyTree(); radius = 3.5; }
-                else if (r < 0.015) {
+                else if (r < 0.025) {
                     if (canPlace(x, z, 2)) {
                         const wolfMesh = createShadowWolf();
                         activeEntities.push(new Entity(wolfMesh, x, z, 'wolf'));
@@ -4752,7 +4752,7 @@ function spawnDecorChunk(start, end) {
             }
         } else if (biome.type === BIOMES.GOLDEN) {
             if (r < 0.04) { obj = createGoldenTree(); radius = 3.5; }
-            else if (r < 0.042) {
+            else if (r < 0.048) {
                 if (canPlace(x, z, 10)) {
                     const dragonMesh = createDragon();
                     const dragonEnt = new Entity(dragonMesh, x, z, 'dragon');
@@ -4779,7 +4779,7 @@ function spawnDecorChunk(start, end) {
                         worldGroup.add(rareChest);
                     }
                 }
-                else if (r < 0.09) {
+                else if (r < 0.12) {
                     if (canPlace(x, z, 3)) {
                         const golemMesh = createCrystalGolem();
                         activeEntities.push(new Entity(golemMesh, x, z, 'golem'));
@@ -4882,7 +4882,7 @@ function spawnDecorChunk(start, end) {
 
 function spawnEpicFloatingIsland() {
     const mainGroup = new THREE.Group();
-    mainGroup.position.set(0, 150, 0);
+    mainGroup.position.set(400, 180, -400);
 
     const mainRadius = 60;
     const mainDepth = 40;
@@ -5037,7 +5037,7 @@ function runLoadingScreen(isFirstTime, onComplete) {
 
         // Phase 1: spawnDecor (slow) broken into chunks of 200 iterations
         const CHUNK = 200;
-        const TOTAL_ITERS = 8000;
+        const TOTAL_ITERS = 15000;
         let iter = 0;
 
         // We need access to spawnDecor internals — so we refactor the progress
