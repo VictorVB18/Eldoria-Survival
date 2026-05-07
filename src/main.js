@@ -6374,7 +6374,7 @@ window.addEventListener('mousedown', (e) => {
                 currentHp--;
                 state.instanceHealth.set(healthKey, currentHp);
 
-                if (type === 'rock' && state.equips.weapon !== 'pickaxe') {
+                if (type === 'rock' && (!state.equips.weapon || !state.equips.weapon.includes('pickaxe'))) {
                     spawnResourcePop(intersectPoint, 'Need Pickaxe!');
                     state.instanceHealth.set(healthKey, currentHp + 1); // Refund HP
                     return;
