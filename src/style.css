@@ -707,6 +707,8 @@ canvas {
     background: transparent;
     backdrop-filter: none;
     pointer-events: none;
+    justify-content: flex-start;
+    padding-left: 100px;
 }
 .customizer-panel {
     pointer-events: auto;
@@ -1582,4 +1584,37 @@ canvas {
     border: 2px solid #7f0000 !important;
     color: #fff !important;
     box-shadow: inset 0 0 10px rgba(0,0,0,0.8) !important;
+}
+
+/* Dynamic Controls Styles */
+.control-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.control-desc {
+    font-size: 1.1rem;
+    color: #e0d8c0;
+}
+.control-btn {
+    background: rgba(0,0,0,0.5);
+    border: 2px solid #5a2a18;
+    color: #fff;
+    padding: 5px 15px;
+    font-family: inherit;
+    font-size: 1rem;
+    cursor: pointer;
+    min-width: 140px;
+    text-transform: uppercase;
+    transition: all 0.2s;
+}
+.control-btn:hover {
+    background: #8b4513;
+}
+.control-btn.listening {
+    background: #e0d8c0;
+    color: #000;
+    border-color: #fff;
 }

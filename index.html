@@ -149,21 +149,19 @@
     </div>
 
     <!-- Modals -->
+    
     <div id="controls-modal" class="modal hidden">
-        <div class="modal-content">
+        <div class="modal-content" style="width: 600px; max-width: 90%;">
             <h2>CONTROLS</h2>
-            <ul>
-                <li><strong>W, A, S, D</strong> - Move Around</li>
-                <li><strong>Spacebar</strong> - Jump</li>
-                <li><strong>Shift</strong> - Sprint / Dismount Horse</li>
-                <li><strong>Mouse</strong> - Look Around</li>
-                <li><strong>Click</strong> - Attack / Harvest / Tame Horse (hold 🥕)</li>
-                <li><strong>E</strong> - Talk to Villager / Mount &amp; Dismount Horse</li>
-                <li><strong>B</strong> - Toggle Inventory</li>
-                <li><strong>Esc</strong> - Pause Menu</li>
-            </ul>
+            <div id="controls-list" style="margin-top: 20px; text-align: left; max-height: 50vh; overflow-y: auto;">
+                <!-- dynamic rows injected via js -->
+            </div>
             <p style="font-size:0.8rem;opacity:0.7;margin-top:1rem;">🐴 <em>Find carrots near villages, then click a wild horse to tame it!</em></p>
-            <button class="close-modal btn-outline">CLOSE</button>
+            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: space-between;">
+                <button id="reset-controls-btn" class="btn-outline" style="flex:1;">RESET TO DEFAULT</button>
+                <button id="save-controls-btn" class="btn-solid" style="flex:1;">SAVE SETTINGS</button>
+                <button id="close-controls-btn" class="close-modal btn-outline" style="flex:1;">CANCEL</button>
+            </div>
         </div>
     </div>
 
@@ -247,6 +245,11 @@
             <div class="custom-group">
                 <label>Pants Color</label>
                 <input type="color" id="color-pants" value="#8b4513">
+            </div>
+
+            <div class="custom-group">
+                <label>Shoe Color</label>
+                <input type="color" id="color-shoe" value="#212121">
             </div>
 
             <button id="finish-customize" class="close-modal btn-solid">DONE</button>

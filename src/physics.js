@@ -38,3 +38,24 @@ export function resolveCollisions(pos) {
         }
     }
 }
+
+export function checkCollision(x, z, r) {
+    const cx = Math.floor(x / COLLIDER_CELL);
+    const cz = Math.floor(z / COLLIDER_CELL);
+    for (let i = -1; i <= 1; i++) {
+        for (let j = -1; j <= 1; j++) {
+            const cell = colliderGrid.get(`${cx+i},${cz+j}`);
+            if (!cell) continue;
+            for (const col of cell) {
+                const dx = x - col.x;
+                const dz = z - col.z;
+                const distSq = dx*dx + dz*dz;
+                const minDist = r + col.r;
+                if (distSq < minDist * minDist) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
