@@ -195,98 +195,114 @@
     </div>
 
     <div id="customizer-modal" class="modal hidden">
-        <div class="customizer-panel">
-            <h2>CHARACTER CREATOR</h2>
+        <div class="customizer-panel" id="customizer-panel">
+            <h2>CUSTOMIZE</h2>
             
-            <div class="custom-group">
-                <label>Skin Tone</label>
-                <input type="color" id="color-skin" value="#ffccaa">
+            <div class="custom-tabs">
+                <button class="custom-tab active" data-tab="tab-basics">BODY</button>
+                <button class="custom-tab" data-tab="tab-face">FACE</button>
+                <button class="custom-tab" data-tab="tab-outfit">OUTFIT</button>
+                <button class="custom-tab" data-tab="tab-extras">EXTRA</button>
             </div>
 
-            <div class="custom-group">
-                <label>Eye Color</label>
-                <input type="color" id="color-eyes" value="#000000">
-            </div>
-
-            <div class="custom-group">
-                <label>Hair Style</label>
-                <div class="custom-row">
-                    <select id="select-hair">
-                        <option value="none">Bald</option>
-                        <option value="short">Short</option>
-                        <option value="spiky" selected>Spiky</option>
-                        <option value="curly">Curly</option>
-                        <option value="long">Long</option>
-                        <option value="ponytail">Ponytail</option>
-                    </select>
-                    <input type="color" id="color-hair" value="#222222">
+            <div class="tab-scroller">
+                <!-- TAB: BASICS -->
+                <div id="tab-basics" class="custom-tab-content">
+                    <div class="custom-group">
+                        <label>Skin Tone</label>
+                        <input type="color" id="color-skin" value="#ffccaa">
+                    </div>
+                    <div class="custom-group">
+                        <label>Hair Style</label>
+                        <select id="select-hair">
+                            <option value="none">Bald</option>
+                            <option value="short">Short Trim</option>
+                            <option value="spiky" selected>The Hero (Spiky)</option>
+                            <option value="curly">Curly Locks</option>
+                            <option value="long">Long & Wild</option>
+                            <option value="ponytail">Ponytail</option>
+                        </select>
+                    </div>
+                    <div class="custom-group">
+                        <label>Hair Color</label>
+                        <input type="color" id="color-hair" value="#222222">
+                    </div>
+                    <div class="custom-group">
+                        <label>Beard Style</label>
+                        <select id="select-beard">
+                            <option value="none" selected>Clean Shaven</option>
+                            <option value="stubble">Stubble</option>
+                            <option value="mustache">Mustache</option>
+                            <option value="goatee">Goatee</option>
+                            <option value="full">Full Beard</option>
+                        </select>
+                    </div>
+                    <div class="custom-group">
+                        <label>Beard Color</label>
+                        <input type="color" id="color-beard" value="#222222">
+                    </div>
                 </div>
-            </div>
 
-            <div class="custom-group">
-                <label>Beard Style</label>
-                <div class="custom-row">
-                    <select id="select-beard">
-                        <option value="none" selected>Clean Shaven</option>
-                        <option value="stubble">Stubble</option>
-                        <option value="mustache">Mustache</option>
-                        <option value="goatee">Goatee</option>
-                        <option value="full">Full Beard</option>
-                    </select>
-                    <input type="color" id="color-beard" value="#222222">
+                <!-- TAB: FACE -->
+                <div id="tab-face" class="custom-tab-content hidden">
+                    <div class="custom-group">
+                        <label>Eye Style</label>
+                        <select id="select-eyes">
+                            <option value="default">Default</option>
+                            <option value="narrow">Serious / Narrow</option>
+                            <option value="large">Large / Cute</option>
+                            <option value="angry">Angry</option>
+                            <option value="undead">Undead / Glowing</option>
+                        </select>
+                    </div>
+                    <div class="custom-group">
+                        <label>Eye Color</label>
+                        <input type="color" id="color-eyes" value="#000000">
+                    </div>
+                    <div class="custom-group">
+                        <label>Facial Scar</label>
+                        <select id="select-scar">
+                            <option value="none">None</option>
+                            <option value="eye_left">Left Eye Scar</option>
+                            <option value="eye_right">Right Eye Scar</option>
+                            <option value="cross_cheek">Cross Cheek Scar</option>
+                            <option value="bridge">Bridge Scar</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
 
-            <div class="custom-group">
-                <label>Shirt Color</label>
-                <input type="color" id="color-shirt" value="#556b2f">
-            </div>
+                <!-- TAB: OUTFIT -->
+                <div id="tab-outfit" class="custom-tab-content hidden">
+                    <div class="custom-group">
+                        <label>Shirt Color</label>
+                        <input type="color" id="color-shirt" value="#556b2f">
+                    </div>
+                    <div class="custom-group">
+                        <label>Pants Color</label>
+                        <input type="color" id="color-pants" value="#8b4513">
+                    </div>
+                    <div class="custom-group">
+                        <label>Shoe Color</label>
+                        <input type="color" id="color-shoe" value="#212121">
+                    </div>
+                </div>
 
-            <div class="custom-group">
-                <label>Pants Color</label>
-                <input type="color" id="color-pants" value="#8b4513">
-            </div>
-
-            <div class="custom-group">
-                <label>Eye Style</label>
-                <select id="select-eyes">
-                    <option value="default">Default</option>
-                    <option value="narrow">Serious / Narrow</option>
-                    <option value="large">Large / Cute</option>
-                    <option value="angry">Angry</option>
-                    <option value="undead">Undead / Glowing</option>
-                </select>
-            </div>
-
-            <div class="custom-group">
-                <label>Facial Scar</label>
-                <select id="select-scar">
-                    <option value="none">None</option>
-                    <option value="eye_left">Left Eye Scar</option>
-                    <option value="eye_right">Right Eye Scar</option>
-                    <option value="cross_cheek">Cross Cheek Scar</option>
-                    <option value="bridge">Bridge Scar</option>
-                </select>
-            </div>
-
-            <div class="custom-group">
-                <label>Accessory</label>
-                <select id="select-accessory">
-                    <option value="none">None</option>
-                    <option value="cape">Cape</option>
-                    <option value="headband">Headband</option>
-                    <option value="bandana">Bandana</option>
-                </select>
-            </div>
-
-            <div class="custom-group">
-                <label>Accessory Color</label>
-                <input type="color" id="color-accessory" value="#ff0000">
-            </div>
-
-            <div class="custom-group">
-                <label>Shoe Color</label>
-                <input type="color" id="color-shoe" value="#212121">
+                <!-- TAB: EXTRAS -->
+                <div id="tab-extras" class="custom-tab-content hidden">
+                    <div class="custom-group">
+                        <label>Accessory</label>
+                        <select id="select-accessory">
+                            <option value="none">None</option>
+                            <option value="cape">Royal Cape</option>
+                            <option value="headband">Warrior Headband</option>
+                            <option value="bandana">Outlaw Bandana</option>
+                        </select>
+                    </div>
+                    <div class="custom-group">
+                        <label>Accessory Color</label>
+                        <input type="color" id="color-accessory" value="#ff0000">
+                    </div>
+                </div>
             </div>
 
             <button id="finish-customize" class="close-modal btn-solid">DONE</button>

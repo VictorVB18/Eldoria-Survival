@@ -746,30 +746,55 @@ function updateAccessory(type) {
     accessoryGroup.clear();
     headAccessoryGroup.clear();
     if (type === 'none') return;
+    
     if (type === 'cape') {
         const capeGroup = new THREE.Group();
-        // Top part (shoulders)
-        const top = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.4, 0.05), accessoryMat);
-        top.position.set(0, 1.4, -0.25);
+        const goldTrimMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.8, roughness: 0.2 });
         
-        // Main flow part (tapered)
-        const main = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.2, 0.04), accessoryMat);
-        main.position.set(0, 0.6, -0.6); // Way behind backpack
-        main.rotation.x = 0.15;
+        // Shoulder Clasp / Collar
+        const collar = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.15, 0.45), accessoryMat);
+        collar.position.set(0, 1.45, -0.2);
         
-        // Connecting piece to look like it flows over shoulders
-        const connector = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.1, 0.4), accessoryMat);
-        connector.position.set(0, 1.45, -0.4);
+        // Gold trim on collar
+        const collarTrim = new THREE.Mesh(new THREE.BoxGeometry(0.87, 0.05, 0.47), goldTrimMat);
+        collarTrim.position.set(0, 1.45, -0.2);
         
-        capeGroup.add(top, main, connector);
+        // 3-Layered Fabric
+        const stripWidth = 0.3;
+        const strips = [
+            { x: -0.3, y: 0.5, z: -0.65, h: 1.3, rotZ: 0.05 },
+            { x: 0, y: 0.4, z: -0.7, h: 1.5, rotZ: 0 },
+            { x: 0.3, y: 0.5, z: -0.65, h: 1.3, rotZ: -0.05 }
+        ];
+        
+        strips.forEach(s => {
+            const strip = new THREE.Mesh(new THREE.BoxGeometry(stripWidth, s.h, 0.04), accessoryMat);
+            strip.position.set(s.x, s.y, s.z);
+            strip.rotation.set(0.15, 0, s.rotZ);
+            strip.castShadow = true;
+            
+            // Gold trim at the bottom of each strip
+            const trim = new THREE.Mesh(new THREE.BoxGeometry(stripWidth + 0.02, 0.08, 0.06), goldTrimMat);
+            trim.position.set(0, -s.h/2 + 0.04, 0);
+            strip.add(trim);
+            
+            capeGroup.add(strip);
+        });
+        
+        capeGroup.add(collar, collarTrim);
         accessoryGroup.add(capeGroup);
     } else if (type === 'headband') {
+        const hbGroup = new THREE.Group();
         const hb = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.1, 0.55), accessoryMat);
         hb.position.y = 0.15;
-        headAccessoryGroup.add(hb);
+        const knot = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.2, 0.1), accessoryMat);
+        knot.position.set(0, 0.15, -0.3);
+        knot.rotation.z = 0.5;
+        hbGroup.add(hb, knot);
+        headAccessoryGroup.add(hbGroup);
     } else if (type === 'bandana') {
-        const b = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.2, 0.1), accessoryMat);
-        b.position.set(0, -0.15, 0.26);
+        const b = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.25, 0.15), accessoryMat);
+        b.position.set(0, -0.1, 0.2);
         headAccessoryGroup.add(b);
     }
 }
@@ -1767,6 +1792,19 @@ document.getElementById('select-beard')?.addEventListener('change', (e) => updat
 document.getElementById('select-eyes')?.addEventListener('change', (e) => updateEyes(e.target.value));
 document.getElementById('select-scar')?.addEventListener('change', (e) => updateScars(e.target.value));
 document.getElementById('select-accessory')?.addEventListener('change', (e) => updateAccessory(e.target.value));
+
+// Character Creator Tabs
+document.querySelectorAll('.custom-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.custom-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const target = tab.getAttribute('data-tab');
+        document.querySelectorAll('.custom-tab-content').forEach(content => {
+            if (content.id === target) content.classList.remove('hidden');
+            else content.classList.add('hidden');
+        });
+    });
+});
 
 // --- CONTROLS ---
 

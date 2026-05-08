@@ -712,38 +712,73 @@ canvas {
 }
 .customizer-panel {
     pointer-events: auto;
-    background: rgba(10, 15, 30, 0.9);
-    border: 1px solid #00f2ff;
+    background: rgba(10, 15, 30, 0.95);
+    border: 3px solid #4a2511;
     padding: 20px;
     border-radius: 20px;
-    width: 320px;
+    width: 380px;
     position: absolute;
     left: 50px;
     top: 50%;
     transform: translateY(-50%);
-    max-height: 90vh;
-    overflow-y: auto;
+    max-height: 85vh;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    box-shadow: 0 0 50px rgba(0,0,0,0.8);
 }
 
-/* Scrollbar styling for the panel */
-.customizer-panel::-webkit-scrollbar {
-    width: 8px;
-}
-.customizer-panel::-webkit-scrollbar-track {
-    background: rgba(0,0,0,0.2);
-}
-.customizer-panel::-webkit-scrollbar-thumb {
-    background: #4a2511;
-    border-radius: 4px;
-}
-
-.custom-group {
+.custom-tabs {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     gap: 5px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid rgba(255,255,255,0.1);
+    padding-bottom: 10px;
+}
+
+.custom-tab {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: bold;
+    flex: 1;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.custom-tab:hover {
+    background: rgba(255,255,255,0.15);
+}
+
+.custom-tab.active {
+    background: #4a2511;
+    border-color: #8b4513;
+    color: #ffcc00;
+    box-shadow: 0 0 10px rgba(139, 69, 19, 0.5);
+}
+
+.tab-scroller {
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 10px;
+}
+
+/* Custom scrollbar */
+.tab-scroller::-webkit-scrollbar {
+    width: 6px;
+}
+.tab-scroller::-webkit-scrollbar-thumb {
+    background: #4a2511;
+    border-radius: 10px;
+}
+
+.custom-tab-content.hidden {
+    display: none;
 }
 .custom-group h2 { text-align: center; color: #00f2ff; margin-top: 0; }
 .custom-group label { display: block; margin-bottom: 8px; font-size: 0.9rem; opacity: 0.8; }
