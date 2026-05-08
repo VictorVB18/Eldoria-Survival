@@ -813,8 +813,8 @@ function createLeg(isRight) {
     leg.position.y = -0.45;
     leg.castShadow = true;
     
-    const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.2, 0.4), shoeMat);
-    shoe.position.set(0, -0.8, 0.05);
+    const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.25, 0.5), shoeMat);
+    shoe.position.set(0, -0.775, 0.08);
     shoe.castShadow = true;
     
     group.add(leg, shoe);
