@@ -759,34 +759,46 @@ function updateAccessory(type) {
         
         const capeGroup = new THREE.Group();
         
-        // 1. Shoulder Collar (Tight against body)
-        const collar = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.1, 0.42), accessoryMat);
-        collar.position.set(0, 1.5, -0.05);
+        // 1. Shoulder Clasps (The parts that "attach" on top)
+        const claspGeo = new THREE.BoxGeometry(0.25, 0.08, 0.3);
+        const leftClasp = new THREE.Mesh(claspGeo, accessoryMat);
+        leftClasp.position.set(-0.25, 1.52, 0);
+        const rightClasp = new THREE.Mesh(claspGeo, accessoryMat);
+        rightClasp.position.set(0.25, 1.52, 0);
         
-        // 2. Main flowing strips (Shortened and flush)
+        // 2. Neck Bridge (Behind neck)
+        const neck = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.1, 0.1), accessoryMat);
+        neck.position.set(0, 1.52, -0.1);
+
+        // 3. Main Upper Cape (Flows from shoulders)
+        const upper = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.7, 0.06), accessoryMat);
+        upper.position.set(0, 1.15, -0.22);
+        upper.rotation.x = 0.15;
+
+        // 4. Tattered Bottom Strips
         const flowGrp = new THREE.Group();
-        flowGrp.position.set(0, 0.9, -0.21); 
-        flowGrp.rotation.x = 0.05;
+        flowGrp.position.set(0, 0.8, -0.33); 
 
         const strips = [
-            { x: -0.18, h: 1.0, rz: 0.04, z: 0.01 },
-            { x: 0, h: 1.15, rz: 0, z: 0 },
-            { x: 0.18, h: 1.0, rz: -0.04, z: 0.01 }
+            { x: -0.22, h: 0.7, rz: 0.05 },
+            { x: 0, h: 0.9, rz: 0 },
+            { x: 0.22, h: 0.7, rz: -0.05 }
         ];
 
         strips.forEach(s => {
-            const strip = new THREE.Mesh(new THREE.BoxGeometry(0.32, s.h, 0.04), accessoryMat);
-            strip.position.set(s.x, -s.h/2, s.z);
+            const strip = new THREE.Mesh(new THREE.BoxGeometry(0.35, s.h, 0.04), accessoryMat);
+            strip.position.set(s.x, -s.h/2, 0);
             strip.rotation.z = s.rz;
+            strip.rotation.x = 0.1;
             strip.castShadow = true;
             
-            const trim = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.06, 0.06), goldTrimMat);
-            trim.position.set(0, -s.h/2 + 0.03, 0);
+            const trim = new THREE.Mesh(new THREE.BoxGeometry(0.37, 0.1, 0.06), goldTrimMat);
+            trim.position.set(0, -s.h/2 + 0.05, 0);
             strip.add(trim);
             flowGrp.add(strip);
         });
         
-        capeGroup.add(collar, flowGrp);
+        capeGroup.add(leftClasp, rightClasp, neck, upper, flowGrp);
         accessoryGroup.add(capeGroup);
     } else if (type === 'headband') {
         const hbGroup = new THREE.Group();
