@@ -14,12 +14,16 @@ An immersive 3D survival RPG set in the mystical realm of Eldoria. Explore lush 
 *   🎬 **Cinematic Intro**: A movie-style storytelling sequence for all new characters.
 *   🌍 **Procedural World**: Explore diverse biomes including Magic Forests, Golden Plains, and Crystal Highlands.
 *   🏰 **Capital City**: Visit the grand city at the center of the world featuring a castle, blacksmith, and church.
-*   🎒 **Tabbed Inventory**: A redesigned backpack with separate 'Bag' and 'Crafting' views for better organization.
-*   💰 **Merchant Trading**: Trade your gathered resources with the city Merchant for rare items.
-*   📦 **Loot System**: Find hidden chests in Ruins and Crystal Caves containing essential survival gear.
-*   💾 **Save System**: 4 persistent save slots to track your progress.
-*   🎭 **Character Customization**: Personalize your adventurer's appearance.
-*   🌅 **Dynamic World**: Real-time lighting and atmosphere transitions.
+*   🎭 **Advanced Character Creator**: Deep personalization for your adventurer:
+    *   **360° Preview**: Click and drag to rotate your character for a full inspection.
+    *   **Expression System**: Change your look with distinct eye styles (Serious, Angry, Undead, etc.).
+    *   **Battle Scars**: Add procedural 3D scars to your face.
+    *   **Epic Accessories**: Equip Royal Capes, Warrior Headbands, and Ninja Masks.
+    *   **Tabbed Interface**: Organized categories for a seamless customization experience.
+*   🎒 **RPG Inventory & Crafting**: A dual-view backpack system for managing loot and crafting survival gear.
+*   📦 **Loot & Treasure**: Find hidden chests in Ruins and Crystal Caves containing essential equipment.
+*   💾 **Persistent Saves**: 4 save slots that track your level, health, and unique appearance.
+*   🌍 **Dynamic Open World**: Real-time lighting, atmospheric day/night cycles, and diverse biomes.
 
 ## 🎮 Controls
 *   **WASD**: Movement
