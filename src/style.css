@@ -714,16 +714,38 @@ canvas {
     pointer-events: auto;
     background: rgba(10, 15, 30, 0.9);
     border: 1px solid #00f2ff;
-    padding: 30px;
+    padding: 20px;
     border-radius: 20px;
-    width: 350px;
+    width: 320px;
     position: absolute;
-    right: 50px;
+    left: 50px;
     top: 50%;
     transform: translateY(-50%);
+    max-height: 90vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
-.customizer-panel h2 { text-align: center; color: #00f2ff; margin-top: 0; }
-.custom-group { margin-bottom: 20px; }
+
+/* Scrollbar styling for the panel */
+.customizer-panel::-webkit-scrollbar {
+    width: 8px;
+}
+.customizer-panel::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.2);
+}
+.customizer-panel::-webkit-scrollbar-thumb {
+    background: #4a2511;
+    border-radius: 4px;
+}
+
+.custom-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.custom-group h2 { text-align: center; color: #00f2ff; margin-top: 0; }
 .custom-group label { display: block; margin-bottom: 8px; font-size: 0.9rem; opacity: 0.8; }
 .custom-row { display: flex; gap: 10px; }
 .custom-group select, .custom-group input[type="color"] {

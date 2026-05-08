@@ -669,6 +669,16 @@ const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.04, 0.08), eyeMat);
 mouth.position.set(0, -0.12, 0.25);
 head.add(leftEye, rightEye, mouth);
 
+const scarMat = new THREE.MeshStandardMaterial({ color: 0x880000 });
+const accessoryMat = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+
+const scarGroup = new THREE.Group();
+head.add(scarGroup);
+const accessoryGroup = new THREE.Group();
+player.add(accessoryGroup);
+const headAccessoryGroup = new THREE.Group();
+head.add(headAccessoryGroup);
+
 const hairMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
 const beardMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
 
@@ -676,6 +686,93 @@ const hairGroup = new THREE.Group();
 head.add(hairGroup);
 const beardGroup = new THREE.Group();
 head.add(beardGroup);
+
+function updateEyes(style) {
+    leftEye.scale.set(1, 1, 1);
+    rightEye.scale.set(1, 1, 1);
+    leftEye.rotation.z = 0;
+    rightEye.rotation.z = 0;
+    eyeMat.emissiveIntensity = 0;
+    eyeMat.emissive.set(0x000000);
+
+    if (style === 'narrow') {
+        leftEye.scale.y = 0.4;
+        rightEye.scale.y = 0.4;
+    } else if (style === 'large') {
+        leftEye.scale.set(1.4, 1.4, 1);
+        rightEye.scale.set(1.4, 1.4, 1);
+    } else if (style === 'angry') {
+        leftEye.rotation.z = 0.4;
+        rightEye.rotation.z = -0.4;
+        leftEye.scale.y = 0.6;
+        rightEye.scale.y = 0.6;
+    } else if (style === 'undead') {
+        eyeMat.color.set(0xffffff);
+        eyeMat.emissive.set(0x00ffff);
+        eyeMat.emissiveIntensity = 1;
+        leftEye.scale.set(1.2, 1.2, 1.2);
+        rightEye.scale.set(1.2, 1.2, 1.2);
+    } else {
+        const c = document.getElementById('color-eyes')?.value || '#000000';
+        eyeMat.color.set(c);
+    }
+}
+
+function updateScars(type) {
+    scarGroup.clear();
+    if (type === 'none') return;
+    if (type === 'eye_left') {
+        const s = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.2, 0.02), scarMat);
+        s.position.set(-0.1, 0.1, 0.26);
+        scarGroup.add(s);
+    } else if (type === 'eye_right') {
+        const s = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.2, 0.02), scarMat);
+        s.position.set(0.1, 0.1, 0.26);
+        scarGroup.add(s);
+    } else if (type === 'cross_cheek') {
+        const s1 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.02, 0.02), scarMat);
+        const s2 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.02, 0.02), scarMat);
+        s1.rotation.z = 0.7; s2.rotation.z = -0.7;
+        s1.position.set(0.18, -0.1, 0.26); s2.position.set(0.18, -0.1, 0.26);
+        scarGroup.add(s1, s2);
+    } else if (type === 'bridge') {
+        const s = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.03, 0.02), scarMat);
+        s.position.set(0, 0, 0.26);
+        scarGroup.add(s);
+    }
+}
+
+function updateAccessory(type) {
+    accessoryGroup.clear();
+    headAccessoryGroup.clear();
+    if (type === 'none') return;
+    if (type === 'cape') {
+        const capeGroup = new THREE.Group();
+        // Top part (shoulders)
+        const top = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.4, 0.05), accessoryMat);
+        top.position.set(0, 1.4, -0.25);
+        
+        // Main flow part (tapered)
+        const main = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.2, 0.04), accessoryMat);
+        main.position.set(0, 0.6, -0.6); // Way behind backpack
+        main.rotation.x = 0.15;
+        
+        // Connecting piece to look like it flows over shoulders
+        const connector = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.1, 0.4), accessoryMat);
+        connector.position.set(0, 1.45, -0.4);
+        
+        capeGroup.add(top, main, connector);
+        accessoryGroup.add(capeGroup);
+    } else if (type === 'headband') {
+        const hb = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.1, 0.55), accessoryMat);
+        hb.position.y = 0.15;
+        headAccessoryGroup.add(hb);
+    } else if (type === 'bandana') {
+        const b = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.2, 0.1), accessoryMat);
+        b.position.set(0, -0.15, 0.26);
+        headAccessoryGroup.add(b);
+    }
+}
 
 function createDetailedHair(style, color) {
     const g = new THREE.Group();
@@ -1088,7 +1185,11 @@ function saveGame() {
             pants: document.getElementById('color-pants').value,
             shoes: document.getElementById('color-shoe').value,
             hairStyle: document.getElementById('select-hair').value,
-            beardStyle: document.getElementById('select-beard').value
+            beardStyle: document.getElementById('select-beard').value,
+            eyeStyle: document.getElementById('select-eyes').value,
+            scarType: document.getElementById('select-scar').value,
+            accessoryType: document.getElementById('select-accessory').value,
+            accessoryColor: document.getElementById('color-accessory').value
         }
     };
     setSaveData(currentSaveSlot, data);
@@ -1129,6 +1230,23 @@ function loadGame(data) {
 
     document.getElementById('select-beard').value = data.appearance.beardStyle;
     updateBeard(data.appearance.beardStyle);
+
+    if (data.appearance.eyeStyle) {
+        document.getElementById('select-eyes').value = data.appearance.eyeStyle;
+        updateEyes(data.appearance.eyeStyle);
+    }
+    if (data.appearance.scarType) {
+        document.getElementById('select-scar').value = data.appearance.scarType;
+        updateScars(data.appearance.scarType);
+    }
+    if (data.appearance.accessoryType) {
+        document.getElementById('select-accessory').value = data.appearance.accessoryType;
+        updateAccessory(data.appearance.accessoryType);
+    }
+    if (data.appearance.accessoryColor) {
+        document.getElementById('color-accessory').value = data.appearance.accessoryColor;
+        accessoryMat.color.set(data.appearance.accessoryColor);
+    }
 
     updateHeldItem();
 }
@@ -1638,8 +1756,17 @@ document.getElementById('color-beard')?.addEventListener('input', (e) => beardMa
 document.getElementById('color-shirt')?.addEventListener('input', (e) => shirtMat.color.set(e.target.value));
 document.getElementById('color-pants')?.addEventListener('input', (e) => pantsMat.color.set(e.target.value));
 document.getElementById('color-shoe')?.addEventListener('input', (e) => shoeMat.color.set(e.target.value));
+document.getElementById('color-eyes')?.addEventListener('input', (e) => {
+    if (document.getElementById('select-eyes').value === 'default') {
+        eyeMat.color.set(e.target.value);
+    }
+});
+document.getElementById('color-accessory')?.addEventListener('input', (e) => accessoryMat.color.set(e.target.value));
 document.getElementById('select-hair')?.addEventListener('change', (e) => updateHair(e.target.value));
 document.getElementById('select-beard')?.addEventListener('change', (e) => updateBeard(e.target.value));
+document.getElementById('select-eyes')?.addEventListener('change', (e) => updateEyes(e.target.value));
+document.getElementById('select-scar')?.addEventListener('change', (e) => updateScars(e.target.value));
+document.getElementById('select-accessory')?.addEventListener('change', (e) => updateAccessory(e.target.value));
 
 // --- CONTROLS ---
 
