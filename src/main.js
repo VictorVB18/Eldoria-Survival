@@ -738,9 +738,36 @@ const state = {
     },
     instanceHealth: new Map(), // key: meshID_instanceID -> hp
     settings: {
-        musicEnabled: true
+        musicEnabled: true,
+        invertY: localStorage.getItem('eldoria_invert_y') === 'true'
+    },
+    quests: {
+        activeId: null,
+        completed: []
     },
     lastSpawnBucket: 0
+};
+
+// --- QUESTS SYSTEM ---
+const QUESTS = {
+    'gather_wood': {
+        title: "The Woodcutter's Plea",
+        text_offer: "The village walls are rotting. Can you bring us 20 Wood? We'll reward you handsomely.",
+        text_progress: "Do you have the 20 Wood yet? We really need it.",
+        text_complete: "Thank you! This will keep the village safe. Take these carrots and stone for your trouble.",
+        req: { wood: 20 },
+        reward: { xp: 50, carrot: 5, stone: 5 },
+        nextId: 'shadow_threat'
+    },
+    'shadow_threat': {
+        title: "The Shadow Threat",
+        text_offer: "The Shadow Wolves in the Magic Forest are getting bolder. They drop Dark Essence. Bring me 2 Dark Essence as proof of their defeat.",
+        text_progress: "Slaying the wolves is dangerous... Do you have 2 Dark Essence yet?",
+        text_complete: "You are a true hero! Here, take this stone sword. It will serve you better.",
+        req: { dark_essence: 2 },
+        reward: { xp: 150, stone_sword: 1 },
+        nextId: null // End of current questline
+    }
 };
 
 // --- NPC DIALOG STATE ---
@@ -856,7 +883,10 @@ function saveGame() {
             health: state.health,
             hunger: state.hunger,
             xp: state.xp,
-            level: state.level
+            level: state.level,
+            inventory: state.inventory,
+            equips: state.equips,
+            quests: state.quests
         },
         dayTime: dayTime,
         yaw: yaw,
@@ -881,6 +911,12 @@ function loadGame(data) {
     state.hunger = data.state.hunger;
     state.xp = data.state.xp;
     state.level = data.state.level;
+    
+    // Default fallback for older saves
+    if (data.state.inventory) state.inventory = data.state.inventory;
+    if (data.state.equips) state.equips = data.state.equips;
+    if (data.state.quests) state.quests = data.state.quests;
+
     dayTime = data.dayTime;
     yaw = data.yaw;
     pitch = data.pitch;
@@ -1204,6 +1240,22 @@ musicToggleBtn?.addEventListener('click', () => {
     }
 });
 
+const invertYBtn = document.getElementById('invert-y-btn');
+if (invertYBtn) {
+    const updateInvertUI = () => {
+        const on = state.settings.invertY;
+        invertYBtn.textContent = on ? 'ON' : 'OFF';
+        invertYBtn.className = 'toggle-btn ' + (on ? 'on' : 'off');
+    };
+    updateInvertUI();
+
+    invertYBtn.addEventListener('click', () => {
+        state.settings.invertY = !state.settings.invertY;
+        localStorage.setItem('eldoria_invert_y', state.settings.invertY);
+        updateInvertUI();
+    });
+}
+
 // Auto-Save System
 setInterval(() => {
     if (gameStarted && !isPaused) {
@@ -1277,9 +1329,19 @@ const BOOK_SPREADS = [
             <span class='page-num'>— XI —</span>`,
         right: `<h2>Speaking with Villagers</h2>
             <p>Every villager in Eldoria has lived through hardship. They carry stories, warnings, and sometimes, the seeds of great quests. Approach them and press <strong>[E]</strong> to hear what they have to say.</p>
-            <div class='hint-box'><strong>📜 Coming Soon</strong>In a future update, villagers will offer formal quests — from hunting dangerous creatures, to recovering stolen goods, to uncovering the truth behind the Cataclysm itself.</div>
+            <div class='hint-box'><strong>📜 Active Quests</strong>Villagers will now offer formal quests — from gathering resources to hunting dangerous creatures. Completing these tasks yields valuable rewards and experience.</div>
             <span class='page-num'>— XII —</span>`,
     },
+    {
+        left: `<h2>The Capital City</h2>
+            <p>At the center of Eldoria stands the magnificent Capital City. Its towering spires and thick walls have withstood the Cataclysm. Within its safety, you will find skilled tradesmen, a holy church, and a grand castle.</p>
+            <p>The streets are paved with stone, a testament to the old world's architectural prowess.</p>
+            <span class='page-num'>— XIII —</span>`,
+        right: `<h2>The City Merchant</h2>
+            <p>In the heart of the Capital, a travelling Merchant has set up his stall. He deals in rare and exotic goods.</p>
+            <div class='hint-box'><strong>💰 Trade</strong>Bring the Merchant 10 Meat and 5 Hide, and he will trade you a Dark Essence — an invaluable resource that is otherwise only obtained by slaying Shadow Wolves in the Magic Forest.</div>
+            <span class='page-num'>— XIV —</span>`,
+    }
 ];
 
 let currentSpread = 0;
@@ -1399,7 +1461,8 @@ document.addEventListener('mousemove', (e) => {
     mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
     if (document.pointerLockElement === renderer.domElement) {
         yaw -= e.movementX * 0.003;
-        pitch = THREE.MathUtils.clamp(pitch - e.movementY * 0.003, -1.5, 1.5);
+        const inv = state.settings.invertY ? 1 : -1;
+        pitch = THREE.MathUtils.clamp(pitch + e.movementY * inv * 0.003, -1.5, 1.5);
     }
 });
 
@@ -1508,8 +1571,60 @@ window.addEventListener('keydown', (e) => {
                         dialogText.textContent = "Bring me 10 Meat and 5 Hide, and I'll give you something special...";
                     }
                 } else {
-                    const line = VILLAGER_LINES[Math.floor(Math.random() * VILLAGER_LINES.length)];
-                    dialogText.textContent = line;
+                    // Quests System Integration
+                    let qId = state.quests.activeId;
+                    
+                    // If no active quest and the first quest isn't completed, offer it
+                    if (!qId && !state.quests.completed.includes('gather_wood')) {
+                        qId = 'gather_wood';
+                        state.quests.activeId = qId; // Auto-accept for simplicity
+                        dialogText.innerHTML = `<strong>[Quest Started]</strong><br>${QUESTS[qId].text_offer}`;
+                        spawnResourcePop(state.pos, '📜 New Quest: ' + QUESTS[qId].title);
+                    } else if (qId) {
+                        const qData = QUESTS[qId];
+                        let hasReqs = true;
+                        for (const item in qData.req) {
+                            if ((state.inventory[item] || 0) < qData.req[item]) {
+                                hasReqs = false;
+                                break;
+                            }
+                        }
+
+                        if (hasReqs) {
+                            // Complete quest
+                            for (const item in qData.req) {
+                                state.inventory[item] -= qData.req[item];
+                            }
+                            // Give rewards
+                            if (qData.reward.xp) addXp(qData.reward.xp);
+                            for (const item in qData.reward) {
+                                if (item !== 'xp') {
+                                    state.inventory[item] = (state.inventory[item] || 0) + qData.reward[item];
+                                }
+                            }
+                            
+                            state.quests.completed.push(qId);
+                            state.quests.activeId = qData.nextId; // Immediately queue next if exists, or null
+                            
+                            dialogText.innerHTML = `<strong>[Quest Completed]</strong><br>${qData.text_complete}`;
+                            playSound('magic', 1.0);
+                            spawnResourcePop(state.pos, '✅ Quest Complete: ' + qData.title);
+                            updateInventoryUI();
+                            
+                            if (state.quests.activeId) {
+                                setTimeout(() => {
+                                    spawnResourcePop(state.pos, '📜 New Quest available!');
+                                }, 2000);
+                            }
+                        } else {
+                            // Progress text
+                            dialogText.innerHTML = `<strong>[Quest: ${qData.title}]</strong><br>${qData.text_progress}`;
+                        }
+                    } else {
+                        // Standard dialogue if all quests done
+                        const line = VILLAGER_LINES[Math.floor(Math.random() * VILLAGER_LINES.length)];
+                        dialogText.textContent = line;
+                    }
                 }
                 dialogOpen = true;
                 dialogBox.classList.remove('hidden');
